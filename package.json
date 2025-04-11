@@ -1,25 +1,39 @@
 {
   "name": "musemeter",
-  "version": "1.0.0",
-  "description": "App to discover live music coming to a geo of interest",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "run": "node dist/index.js",
-    "build-and-run": "tsc && node dist/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/axios": "^0.9.36",
-    "@types/dotenv": "^6.1.1",
-    "@types/node": "^22.14.0",
-    "typescript": "^5.8.3"
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "server": "node server.cjs",
+    "dev:vite": "vite",
+    "dev:server": "node server.cjs",
+    "dev": "npm-run-all --parallel --print-label dev:*"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.3",
     "axios": "^1.8.4",
-    "dotenv": "^16.5.0"
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.2.0"
   }
 }

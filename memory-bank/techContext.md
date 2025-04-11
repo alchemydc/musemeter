@@ -23,8 +23,5 @@
 - React Router: For handling navigation in the UI.
 - Axios: For making HTTP requests to external APIs.
 - Spotify API: For integrating with Spotify.
-
-## Tool Usage Patterns
-- Using Git for version control and collaboration.
-- Using npm for managing dependencies.
-- Using VSCode for code editing and debugging.
+- tailwindcss: CSS framework for styling the UI.
+- @tailwindcss/vite: Vite plugin for Tailwind CSS.

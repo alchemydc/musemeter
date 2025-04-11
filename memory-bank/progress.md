@@ -23,6 +23,9 @@
 - Ticketmaster API tentatively chosen for music event discovery, pending validation.
 - Validation of Ticketmaster API in progress.
 - SeatGeek API added to the list of music discovery APIs to explore.
+- Migrated the project to Vite with React and TypeScript.
+- Implemented a server-side proxy to protect the API key, using `npm-run-all` to start both the Vite development server and the proxy server.
+- Installed `tailwindcss` and `@tailwindcss/vite` and added `@import "tailwindcss";` to `src/index.css`.
 
 ## Known Issues
 - It is unclear whether the radius parameter to the Ticketmaster API is being honored.
