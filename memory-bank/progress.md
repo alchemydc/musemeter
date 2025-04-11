@@ -8,6 +8,10 @@
 - Described the technologies used and development setup in techContext.md.
 
 ## What's Left to Build
+- Validate the data coverage of the Ticketmaster API in the target geographic areas.
+- Validate the event types provided by the Ticketmaster API.
+- Validate the data accuracy of the Ticketmaster API.
+- Validate the API usage and pricing of the Ticketmaster API.
 - Implement the backend services for user authentication, music event discovery, and Spotify integration.
 - Develop the UI for the web and mobile app.
 - Integrate with third-party APIs for music events and Spotify.
@@ -16,6 +20,8 @@
 ## Current Status
 - Memory bank initialized.
 - Project setup complete.
+- Ticketmaster API tentatively chosen for music event discovery, pending validation.
+- Validation of Ticketmaster API in progress.
 
 ## Known Issues
 - None at this time.

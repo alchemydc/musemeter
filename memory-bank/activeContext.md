@@ -11,14 +11,12 @@ Updating the active context after initializing the memory bank.
 - Created progress.md to track the project's status and known issues.
 
 ## Next Steps
-- Choose the right API for discovering live music events.
+- Validate the data coverage of the Ticketmaster API in the target geographic areas.
+- Validate the event types provided by the Ticketmaster API.
+- Validate the data accuracy of the Ticketmaster API.
+- Validate the API usage and pricing of the Ticketmaster API.
 - Determine the best way to integrate with Spotify for user preferences.
 - Select a suitable UI framework for the web and mobile app.
-
-## Active Decisions and Considerations
-- Choosing the right API for discovering live music events.
-- Determining the best way to integrate with Spotify for user preferences.
-- Selecting a suitable UI framework for the web and mobile app.
 
 ## Important Patterns and Preferences
 - Following the memory bank structure defined in .clinerules.
