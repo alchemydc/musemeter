@@ -22,9 +22,11 @@
 - Project setup complete.
 - Ticketmaster API tentatively chosen for music event discovery, pending validation.
 - Validation of Ticketmaster API in progress.
+- SeatGeek API added to the list of music discovery APIs to explore.
 
 ## Known Issues
-- None at this time.
+- It is unclear whether the radius parameter to the Ticketmaster API is being honored.
+- The Ticketmaster API returns 429 rate limit errors for larger cities like Denver.
 
 ## Evolution of Project Decisions
 - The initial plan was to use a microservices architecture, but this may be reevaluated based on the complexity of the project.
