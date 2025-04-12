@@ -10,6 +10,7 @@ export interface Event {
   _embedded?: {
     venues?: { name: string }[];
   };
+  url?: string;
   // Add other properties as needed
 }
 
@@ -23,10 +24,41 @@ export interface ApiResponse {
     number: number;
     size: number;
   };
+  _links?: {
+    self: { href: string };
+    first?: { href: string };
+    last?: { href: string };
+    next?: { href: string };
+    prev?: { href: string };
+  };
 }
 
-export const getEvents = async () => {
-  const response = await fetch('/api/events');
-  const data = await response.json();
-  return data;
-};
+export const getEvents = async (page: number = 0, size: number = 20): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(`/api/events?page=${page}&size=${size}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data: ApiResponse = await response.json();
+    
+    // Validate pagination data
+    if (!data.page) {
+      throw new Error('Invalid API response: missing pagination data');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch events:', error);
+    throw error;
+  }
+}
+
+export const hasNextPage = (response: ApiResponse): boolean => {
+  return !!response._links?.next;
+}
+
+export const hasPreviousPage = (response: ApiResponse): boolean => {
+  return !!response._links?.prev;
+}

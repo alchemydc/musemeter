@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Event } from './events';
+import { Event, getEvents, ApiResponse } from './events';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 20;
 
   const createPerplexitySearchUrl = (event: Event) => {
     const searchQuery = encodeURIComponent(
@@ -20,9 +23,9 @@ function App() {
         parseInt(event.dates.start.localTime.split(':')[1])
       );
     }
-    
+
     const endDate = new Date(startDate.getTime() + (3 * 60 * 60 * 1000)); // Default 3 hour duration
-    
+
     const params = new URLSearchParams({
       action: 'TEMPLATE',
       text: event.name,
@@ -37,15 +40,20 @@ function App() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await axios.get<{ _embedded: { events: Event[] } }>('/api/events');
-        setEvents(response.data._embedded.events);
+        const data: ApiResponse = await getEvents(currentPage, pageSize);
+        setEvents(data._embedded?.events || []);
+        setTotalPages(data.page.totalPages);
       } catch (error) {
         console.error(error);
       }
     }
 
     fetchEvents();
-  }, []);
+  }, [currentPage, pageSize]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
@@ -59,7 +67,7 @@ function App() {
               <li key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
                 <div className="px-6 py-4">
                   <div className="flex items-center justify-between">
-                    <a 
+                    <a
                       href={createPerplexitySearchUrl(event)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -78,9 +86,9 @@ function App() {
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                       <svg className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                           d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       {event._embedded?.venues?.[0]?.name || 'Unknown Venue'}
@@ -98,7 +106,7 @@ function App() {
                     >
                       <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                    </svg>
                       Add to Calendar
                     </a>
                   </div>
@@ -106,6 +114,25 @@ function App() {
               </li>
             ))}
           </ul>
+        </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 0}
+            className="px-4 py-2 mx-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-gray-700 dark:text-gray-200">
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages - 1}
+            className="px-4 py-2 mx-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
