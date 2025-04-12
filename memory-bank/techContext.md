@@ -2,6 +2,7 @@
 
 ## Technologies Used
 - Node.js: JavaScript runtime environment for the backend services.
+- Vite: framework for rapid Nodejs development
 - React: JavaScript library for building the user interface.
 - Tailwind CSS: CSS framework for styling the UI.
 - Supabase: Backend-as-a-service platform for database and authentication.
@@ -16,8 +17,6 @@
 
 ## Technical Constraints
 - Limited budget for third-party APIs and services.
-- Need to ensure scalability and performance for a large number of users.
-- Need to comply with data privacy regulations.
 
 ## Dependencies
 - React Router: For handling navigation in the UI.

@@ -14,6 +14,7 @@ Music lovers
 
 ## Technical Preferences (optional)
 - Node.js
+- Vite
 - React
 - Tailwind CSS
 - Supabase for backend

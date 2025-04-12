@@ -11,17 +11,23 @@ Reading and updating the memory bank.
 - Created systemPatterns.md to define the system architecture and key technical decisions.
 - Created techContext.md to document the technologies used and development setup.
 - Created progress.md to track the project's status and known issues.
+- Retrieve and display the name, date, time, and venue for all events from the Ticketmaster API for a given city and radius using Vite and React, with a server-side proxy to protect the API key.
+- Added dark mode support to the event view
+- Added a google calendar link to allow the user to add an event of interest to their calendar
+- Rendered each event name as a link to perplexity search with the event name and venue as search parameters.
+- Renamed `src/index.ts` to `src/events.ts` and moved the code related to fetching events to `src/events.ts`.
+- Updated the import statement in `src/main.tsx`.
+- Removed `src/App.css` and updated `src/App.tsx` to remove the import of `src/App.css`.
 
 ## Next Steps
-- Retrieve and display the name, date, time, and venue for all events from the Ticketmaster API for a given city and radius using Vite and React, with a server-side proxy to protect the API key.
-- Validate the data coverage of the Ticketmaster API in the target geographic areas.
-- Validate the event types provided by the Ticketmaster API.
-- Validate the data accuracy of the Ticketmaster API.
-- Validate the API usage and pricing of the Ticketmaster API.
+
+- Add support for handling pagination of the ticketmaster api in events.ts
+- Add support for navigating pagination of events in the UI
+- Continue to validate the API usage and pricing of the Ticketmaster API.
 - Investigate whether the radius parameter to the Ticketmaster API is being honored.
 - Handle 429 rate limit errors from the Ticketmaster API.
 - Determine the best way to integrate with Spotify for user preferences.
-- Select a suitable UI framework for the web and mobile app.
+- Validate Vite+React as UI framework for the web and mobile app.
 
 ## Important Patterns and Preferences
 - Following the memory bank structure defined in .clinerules.

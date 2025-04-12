@@ -24,3 +24,9 @@ export interface ApiResponse {
     size: number;
   };
 }
+
+export const getEvents = async () => {
+  const response = await fetch('/api/events');
+  const data = await response.json();
+  return data;
+};
