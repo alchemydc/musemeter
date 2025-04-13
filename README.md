@@ -37,7 +37,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/musemeter.git
+git clone https://github.com/alchemydc/musemeter.git
 
 # Install dependencies
 npm install
