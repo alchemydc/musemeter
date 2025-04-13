@@ -29,6 +29,7 @@
 - Implemented a server-side proxy to protect the API key, using `npm-run-all` to start both the Vite development server and the proxy server.
 - Determined the pagination parameters and response structure for the Ticketmaster API.
 - Implemented pagination support in `src/events.ts`, `server.cjs`, and `src/App.tsx`.
+- Implemented city and state search functionality in `src/App.tsx` and `server.cjs`. (work in progress)
 - Installed `tailwindcss` and `@tailwindcss/vite` and added `@import "tailwindcss";` to `src/index.css`.
 
 ## Known Issues

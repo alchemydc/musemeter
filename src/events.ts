@@ -33,9 +33,16 @@ export interface ApiResponse {
   };
 }
 
-export const getEvents = async (page: number = 0, size: number = 20): Promise<ApiResponse> => {
+export const getEvents = async (page: number = 0, size: number = 20, city: string = '', state: string = ''): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`/api/events?page=${page}&size=${size}`);
+    let url = `/api/events?page=${page}&size=${size}`;
+    if (city) {
+      url += `&city=${city}`;
+    }
+    if (state) {
+      url += `&state=${state}`;
+    }
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

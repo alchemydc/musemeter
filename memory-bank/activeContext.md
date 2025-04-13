@@ -21,6 +21,7 @@ Adding pagination support to the API and UI.
 ## Next Steps
 
 - Allow the user to specify which region and radius to search for events in. Presently this is hard coded as an env variable.
+- Implemented first stab at city and state search functionality. (work in progress)
 - Investigate whether the radius parameter to the Ticketmaster API is being honored.
 - Handle 429 rate limit errors from the Ticketmaster API.
 - Determine the best way to integrate with Spotify for user preferences.

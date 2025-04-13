@@ -7,6 +7,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 20;
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
 
   const createPerplexitySearchUrl = (event: Event) => {
     const searchQuery = encodeURIComponent(
@@ -37,22 +39,32 @@ function App() {
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
   };
 
-  useEffect(() => {
-    async function fetchEvents() {
-      try {
-        const data: ApiResponse = await getEvents(currentPage, pageSize);
-        setEvents(data._embedded?.events || []);
-        setTotalPages(data.page.totalPages);
-      } catch (error) {
-        console.error(error);
-      }
+  async function fetchEvents() {
+    try {
+      const data: ApiResponse = await getEvents(currentPage, pageSize, city, state);
+      setEvents(data._embedded?.events || []);
+      setTotalPages(data.page.totalPages);
+    } catch (error) {
+      console.error(error);
     }
+  }
 
+  useEffect(() => {
     fetchEvents();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, city, state]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
+    // Scroll to top of events list
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(0);
+    fetchEvents();
   };
 
   return (
@@ -61,6 +73,28 @@ function App() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
           Upcoming Events
         </h1>
+        <div className="flex justify-center mb-4">
+          <input
+            type="text"
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="px-4 py-2 mr-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
+          />
+          <input
+            type="text"
+            placeholder="State"
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            className="px-4 py-2 mr-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
+          />
+          <button
+            onClick={() => handleSearch()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-400"
+          >
+            Search
+          </button>
+        </div>
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {events.map((event: Event, index: number) => (
