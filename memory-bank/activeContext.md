@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Work Focus
-Adding pagination support to the API and UI.
+Allowing the user to click on an event when browsing the list of events to see more details about the event.
 
 # Active Context
 
@@ -16,7 +16,10 @@ Adding pagination support to the API and UI.
 - Retrieve and display the name, date, time, and venue for all events from the Ticketmaster API for a given city and radius using Vite and React.
 - Added dark mode support to the event view
 - Added a google calendar link to allow the user to add an event of interest to their calendar
-- Rendered each event name as a link to perplexity search with the event name and venue as search parameters.
+- Removed the link to Perplexity that was serving as the title for each event.
+- Added a new component called `EventDetails.tsx` to display the event details.
+- Modified the `src/App.tsx` file to display the `EventDetails.tsx` component when an event is clicked.
+- Modified the `api_proxy.cjs` file to add a new endpoint to retrieve the details of a specific event.
 
 ## Next Steps
 
@@ -37,4 +40,3 @@ Adding pagination support to the API and UI.
 - Integration with external APIs (music events, Spotify) will be crucial.
 - The SeatGeek API also looks interesting and has been added to the list of music discovery APIs to explore.
 - We can use perplexity to create links for events we are interested in so we don't have to use ticketmaster links. The syntax is `https://www.perplexity.ai/search?q=boulder%20theater `
-- Implemented pagination support in `src/events.ts` and the UI.

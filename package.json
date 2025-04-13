@@ -7,9 +7,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node api_proxy.cjs",
+    "server": "NODE_ENV=production node api_proxy.cjs",
     "dev:vite": "vite",
-    "dev:server": "node api_proxy.cjs",
+    "dev:server": "NODE_ENV=development node api_proxy.cjs",
     "dev": "npm-run-all --parallel --print-label dev:*"
   },
   "dependencies": {

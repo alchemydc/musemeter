@@ -7,7 +7,7 @@
 - Pulling events for a hardcoded region and radius from ticketmaster API.
 - Rendering the events in a simple but styled UI.
 - Allowing user to add events of interest to Google Calendar.
-- Allowing the user to see more about an event of interest by linking them to a perplexity search.  This likely need to be reworked to use a different Ticketmaster API endpoint to show more detailed information about a specific event.
+- Allowing the user to click on an event when browsing the list of events to see more details about the event.
 - Initialized the memory bank with core files.
 - Defined the project scope and goals in projectbrief.md.
 - Outlined the product vision and user experience in productContext.md.
@@ -17,7 +17,6 @@
 ## What's Left to Build
 - Add docs for the Ticketmaster API into the memory bank.
 - Rework the search functionality to be less US-centric.
-- Use the Ticketmaster API to provide more information about specific events of interest. The user should be able to click into an event of interest to see more detail.
 - Implement the backend services for user authentication, music event discovery, and Spotify integration.
 - Develop the UI for the web and mobile app.
 - Integrate with third-party APIs for music events and Spotify.
@@ -34,6 +33,9 @@
 - Determined the pagination parameters and response structure for the Ticketmaster API.
 - Implemented pagination support in `src/events.ts`, `api_proxy.cjs`, and `src/App.tsx`.
 - Implemented city and state search functionality in `src/App.tsx` and `api_proxy.cjs`. (work in progress)
+- Implemented a new endpoint in `api_proxy.cjs` to retrieve event details.
+- Created a new component called `EventDetails.tsx` to display event details.
+- Modified `src/App.tsx` to display event details when an event is clicked.
 - Installed `tailwindcss` and `@tailwindcss/vite` and added `@import "tailwindcss";` to `src/index.css`.
 - Search sort of works
 

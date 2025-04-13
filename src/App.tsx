@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Event, getEvents, ApiResponse } from './events';
+import EventDetails from './EventDetails';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [showEventDetails, setShowEventDetails] = useState(false);
+
+  const handleEventClick = (eventId: string) => {
+    setSelectedEventId(eventId);
+    setShowEventDetails(true);
+    // Scroll to event details
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleCloseDetails = () => {
+    setShowEventDetails(false);
+    setSelectedEventId(null);
+  };
+
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 20;
   const [city, setCity] = useState('');
@@ -73,6 +92,22 @@ function App() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
           Upcoming Events
         </h1>
+
+        {/* Show event details when an event is selected */}
+        {showEventDetails && selectedEventId && (
+          <div className="mb-8 relative">
+            <button
+              onClick={handleCloseDetails}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <EventDetails eventId={selectedEventId} />
+          </div>
+        )}
+
         <div className="flex justify-center mb-4">
           <input
             type="text"
@@ -102,9 +137,8 @@ function App() {
                 <div className="px-6 py-4">
                   <div className="flex items-center justify-between">
                     <a
-                      href={createPerplexitySearchUrl(event)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href="#"
+                      onClick={() => handleEventClick(event.id)}
                       className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors duration-150"
                     >
                       {event.name}
@@ -168,6 +202,7 @@ function App() {
             Next
           </button>
         </div>
+        {selectedEventId && <EventDetails eventId={selectedEventId} />}
       </div>
     </div>
   );

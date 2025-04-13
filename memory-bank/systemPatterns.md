@@ -12,6 +12,7 @@
 ### API Layer
 - Express proxy server for third-party API calls
 - RESTful endpoints for event data
+    - `/api/events/:id`: Retrieves details for a specific event.
 - Rate limiting and caching implementation
 - Error handling and logging strategy
 - Request validation middleware
@@ -19,7 +20,6 @@
 ### Integration Layer
 - Ticketmaster API integration for event discovery
 - Google Calendar API for event scheduling
-- Perplexity AI for event context enrichment
 - Future Spotify API integration planned
 
 ### Data Layer
@@ -75,6 +75,7 @@
 - EventCard: Individual event display
 - SearchFilters: Event filtering interface
 - CalendarIntegration: Google Calendar integration
+- EventDetails: Displays detailed information about a specific event.
 
 ### Shared Components
 - Button: Reusable button component
@@ -88,7 +89,7 @@
 - ✅ Basic event discovery with Ticketmaster API
 - ✅ Event display with dark mode support
 - ✅ Google Calendar integration
-- ✅ Perplexity search integration
+- ✅ Implemented event details view [work in progress]
 
 ### Phase 2 (Next)
 - User authentication with Supabase

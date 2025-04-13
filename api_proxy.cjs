@@ -1,5 +1,11 @@
-// to test this code, run the following command:
-// curl "http://localhost:3000/api/events?page=0&size=20"
+/* 
+# to test these endpoints:
+# List events for a particular city and state
+curl "http://localhost:3000/api/events?city=Denver&state=CO"
+
+# Get details for a specific event
+curl "http://localhost:3000/api/events/EVENT_ID"
+*/
 
 const express = require('express');
 const cors = require('cors');
@@ -8,6 +14,14 @@ require('dotenv').config();
 
 const app = express();
 const port = 3000;
+const isDev = process.env.NODE_ENV === 'development';
+
+// Debug logger utility
+const debug = (...args) => {
+  if (isDev) {
+    console.log('[Debug]', ...args);
+  }
+};
 
 app.use(cors());
 
@@ -16,7 +30,7 @@ const API_KEY = process.env.API_KEY;
 const RADIUS = process.env.RADIUS || '50';
 const RADIUSUNIT = process.env.RADIUS_UNIT || 'miles'; // or 'km'
 // log the radius to console
-console.log(`Radius: ${RADIUS}`);
+debug(`Search Radius: ${RADIUS}`);
 
 app.get('/api/events', async (req, res) => {
   try {
@@ -62,6 +76,53 @@ app.get('/api/events', async (req, res) => {
     }
 
     res.status(500).json({ error: 'Failed to fetch events' });
+  }
+});
+
+app.get('/api/events/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    debug(`Fetching event details for ID: ${id}`);
+
+    const url = `https://app.ticketmaster.com/discovery/v2/events/${id}.json`;
+    debug(`Calling Ticketmaster API: ${url}`);
+
+    const response = await axios.get(url, {
+      params: {
+        apikey: API_KEY
+      }
+    });
+    
+    debug(`Ticketmaster API response status: ${response.status}`);
+    
+    // Add response data validation
+    if (!response.data) {
+      throw new Error('Invalid API response: missing data');
+    }
+
+    // Add debug logging for response data
+    // debug('Event data:', response.data);
+
+    res.json(response.data);
+  } catch (error) {
+    debug('API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+
+    // Handle rate limiting specifically
+    if (error.response?.status === 429) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded. Please try again later.',
+        retryAfter: error.response.headers['retry-after'] || 30
+      });
+    }
+
+    // Always send an error response
+    return res.status(error.response?.status || 500).json({ 
+      error: error.message || 'Failed to fetch event details' 
+    });
   }
 });
 
