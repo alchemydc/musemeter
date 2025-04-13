@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Event, getEvents, ApiResponse } from './events';
 import EventDetails from './EventDetails';
+import ClassificationIcon from './components/ClassificationIcon';
+import { useDebounce } from './hooks/useDebounce';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -29,34 +31,9 @@ function App() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
 
-  const createPerplexitySearchUrl = (event: Event) => {
-    const searchQuery = encodeURIComponent(
-      `${event.name} ${event._embedded?.venues?.[0]?.name || ''}`
-    );
-    return `https://www.perplexity.ai/search?q=${searchQuery}`;
-  };
-
-  const createGoogleCalendarUrl = (event: Event) => {
-    const startDate = new Date(event.dates.start.localDate);
-    if (event.dates.start.localTime) {
-      startDate.setHours(
-        parseInt(event.dates.start.localTime.split(':')[0]),
-        parseInt(event.dates.start.localTime.split(':')[1])
-      );
-    }
-
-    const endDate = new Date(startDate.getTime() + (3 * 60 * 60 * 1000)); // Default 3 hour duration
-
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: event.name,
-      dates: `${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
-      location: event._embedded?.venues?.[0]?.name || '',
-      details: `Event details: ${event.url || ''}`
-    });
-
-    return `https://calendar.google.com/calendar/render?${params.toString()}`;
-  };
+  // Add debounced values
+  const debouncedCity = useDebounce(city);
+  const debouncedState = useDebounce(state);
 
   async function fetchEvents() {
     try {
@@ -69,18 +46,29 @@ function App() {
   }
 
   useEffect(() => {
-    fetchEvents();
-  }, [currentPage, pageSize, city, state]);
+    if (debouncedCity || debouncedState) {
+      setCurrentPage(0); // Reset to first page when search terms change
+      fetchEvents();
+    }
+  }, [debouncedCity, debouncedState]);
+
+  // Update existing useEffect for pagination
+  useEffect(() => {
+    if (currentPage > 0) { // Only fetch for page changes if we're past page 0
+      fetchEvents();
+    }
+  }, [currentPage]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    // Scroll to top of events list
+    // Scroll to top of events list for both next and previous
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
   };
 
+  // Modify handleSearch to use current input values immediately
   const handleSearch = () => {
     setCurrentPage(0);
     fetchEvents();
@@ -136,22 +124,43 @@ function App() {
               <li key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
                 <div className="px-6 py-4">
                   <div className="flex items-center justify-between">
-                    <a
-                      href="#"
-                      onClick={() => handleEventClick(event.id)}
-                      className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors duration-150"
-                    >
-                      {event.name}
-                    </a>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(event.dates.start.localDate).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </span>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        {event.classifications?.[0]?.segment?.name && (
+                          <ClassificationIcon 
+                            segmentName={event.classifications[0].segment.name}
+                            className="h-5 w-5 text-gray-400 dark:text-gray-500"
+                          />
+                        )}
+                        <a
+                          href="#"
+                          onClick={() => handleEventClick(event.id)}
+                          className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors duration-150"
+                        >
+                          {event.name}
+                        </a>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end text-sm text-gray-500 dark:text-gray-400">
+                      <div>
+                        {new Date(event.dates.start.localDate).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </div>
+                      <div>
+                        {event.dates.start.localTime ? 
+                          new Date(`2000-01-01T${event.dates.start.localTime}`).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit'
+                          }) 
+                          : 'Time TBA'
+                        }
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-2 flex items-center justify-between">
+                  <div className="mt-2 flex items-center">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                       <svg className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
@@ -160,23 +169,7 @@ function App() {
                           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       {event._embedded?.venues?.[0]?.name || 'Unknown Venue'}
-                      <span className="mx-2 dark:text-gray-500">•</span>
-                      {event.dates.start.localTime ? new Date(`2000-01-01T${event.dates.start.localTime}`).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit'
-                      }) : 'Time TBA'}
                     </div>
-                    <a
-                      href={createGoogleCalendarUrl(event)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
-                    >
-                      <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                      Add to Calendar
-                    </a>
                   </div>
                 </div>
               </li>

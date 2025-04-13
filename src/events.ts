@@ -12,6 +12,30 @@ export interface Event {
     venues?: { name: string }[];
   };
   url?: string;
+  classifications?: {
+    primary: boolean;
+    segment: {
+      id: string;
+      name: string;
+    };
+    genre: {
+      id: string;
+      name: string;
+    };
+    subGenre: {
+      id: string;
+      name: string;
+    };
+    type: {
+      id: string;
+      name: string;
+    };
+    subType: {
+      id: string;
+      name: string;
+    };
+    family: boolean;
+  }[];
   // Add other properties as needed
 }
 
@@ -50,6 +74,15 @@ export const getEvents = async (page: number = 0, size: number = 20, city: strin
     }
     
     const data: ApiResponse = await response.json();
+    
+    // Debug log classifications
+    if (process.env.NODE_ENV === 'development') {
+      data._embedded?.events.forEach(event => {
+        console.log(`Event ${event.name} classifications:`, 
+          event.classifications?.map(c => c.segment?.name)
+        );
+      });
+    }
     
     // Validate pagination data
     if (!data.page) {

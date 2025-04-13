@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Work Focus
-Allowing the user to click on an event when browsing the list of events to see more details about the event.
+Figure out what the events api returns so that we can style the list with some detail about what type of event each event is (eg music, sports, etc.)
 
 # Active Context
 
@@ -23,6 +23,7 @@ Allowing the user to click on an event when browsing the list of events to see m
 
 ## Next Steps
 
+- Add some detail about the type of event (eg sports vs music etc) in the event list
 - Allow the user to specify which region and radius to search for events in. Presently this is hard coded as an env variable.
 - Implemented first stab at city and state search functionality. (work in progress)
 - Investigate whether the radius parameter to the Ticketmaster API is being honored.

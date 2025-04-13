@@ -26,7 +26,6 @@ const debug = (...args) => {
 app.use(cors());
 
 const API_KEY = process.env.API_KEY;
-// const CITY = process.env.CITY;
 const RADIUS = process.env.RADIUS || '50';
 const RADIUSUNIT = process.env.RADIUS_UNIT || 'miles'; // or 'km'
 // log the radius to console
@@ -40,33 +39,45 @@ app.get('/api/events', async (req, res) => {
     const city = req.query.city;
     const state = req.query.state;
 
+    debug('Request params:', { page, size, city, state });
+
     // Make request to Ticketmaster API with pagination
-    // ref: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#overview
-    const response = await axios.get(
-      'https://app.ticketmaster.com/discovery/v2/events.json',
-      {
-        params: {
-          apikey: API_KEY,
-          city: city,
-          stateCode: state,
-          radius: RADIUS,
-          unit: RADIUSUNIT,
-          page: page,
-          size: size,
-          sort: 'date,asc' // Optional: sort by date ascending
-        }
+    const url = 'https://app.ticketmaster.com/discovery/v2/events.json';
+    debug(`Calling Ticketmaster API: ${url}`);
+
+    const response = await axios.get(url, {
+      params: {
+        apikey: API_KEY,
+        city: city,
+        stateCode: state,
+        radius: RADIUS,
+        unit: RADIUSUNIT,
+        page: page,
+        size: size,
+        sort: 'date,asc'
       }
-    );
+    });
+
+    debug('Response status:', response.status);
+    debug('Response structure:', {
+      hasData: !!response.data,
+      hasEmbedded: !!response.data?._embedded,
+      hasEvents: !!response.data?._embedded?.events,
+      eventCount: response.data?._embedded?.events?.length || 0
+    });
 
     // Validate response data
-    if (!response.data.page) {
-      throw new Error('Invalid API response: missing pagination data');
+    if (!response.data || !response.data._embedded || !response.data._embedded.events) {
+      debug('Invalid response:', response.data);
+      throw new Error('Invalid API response: missing events data');
     }
 
+    // Just send the response data directly
     res.json(response.data);
+    
   } catch (error) {
     console.error('API Error:', error.message);
-    
+
     // Handle rate limiting specifically
     if (error.response?.status === 429) {
       return res.status(429).json({

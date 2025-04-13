@@ -1,6 +1,7 @@
 # Progress
 
 ## What Works
+- User can click on an event and see (some) event details.
 - Handle 429 rate limiting errors returned by the Ticketmaster API.
 - Allowing the user to search for events in a particular City and State. Note this is US centric and thus needs to be reworked.
 - An API proxy server implemented in node/express to prevent API keys from ending up in client side code
@@ -15,7 +16,7 @@
 - Described the technologies used and development setup in techContext.md.
 
 ## What's Left to Build
-- Add docs for the Ticketmaster API into the memory bank.
+- Add some detail about the type of event (eg sports vs music etc) in the event list
 - Rework the search functionality to be less US-centric.
 - Implement the backend services for user authentication, music event discovery, and Spotify integration.
 - Develop the UI for the web and mobile app.
@@ -38,6 +39,7 @@
 - Modified `src/App.tsx` to display event details when an event is clicked.
 - Installed `tailwindcss` and `@tailwindcss/vite` and added `@import "tailwindcss";` to `src/index.css`.
 - Search sort of works
+- Added docs for the Ticketmaster API into the memory bank.
 
 
 ## Known Issues
