@@ -33,13 +33,12 @@ debug(`Search Radius: ${RADIUS}`);
 
 app.get('/api/events', async (req, res) => {
   try {
-    // Extract pagination parameters and city and state from query
+    // Extract pagination parameters and city from query
     const page = parseInt(req.query.page) || 0;
     const size = parseInt(req.query.size) || process.env.DEFAULT_EVENTS_PER_PAGE || 20;
     const city = req.query.city;
-    const state = req.query.state;
 
-    debug('Request params:', { page, size, city, state });
+    debug('Request params:', { page, size, city });
 
     // Make request to Ticketmaster API with pagination
     const url = 'https://app.ticketmaster.com/discovery/v2/events.json';
@@ -49,7 +48,6 @@ app.get('/api/events', async (req, res) => {
       params: {
         apikey: API_KEY,
         city: city,
-        stateCode: state,
         radius: RADIUS,
         unit: RADIUSUNIT,
         page: page,

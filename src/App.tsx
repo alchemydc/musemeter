@@ -29,15 +29,13 @@ function App() {
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = parseInt(import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE) || 10;
   const [city, setCity] = useState(localStorage.getItem('city') || 'Boulder');
-  const [state, setState] = useState(localStorage.getItem('state') || 'CO');
 
   // Add debounced values
   const debouncedCity = useDebounce(city);
-  const debouncedState = useDebounce(state);
 
   async function fetchEvents() {
     try {
-      const data: ApiResponse = await getEvents(currentPage, pageSize, city, state);
+      const data: ApiResponse = await getEvents(currentPage, pageSize, city);
       setEvents(data._embedded?.events || []);
       setTotalPages(data.page.totalPages);
     } catch (error) {
@@ -46,11 +44,11 @@ function App() {
   }
 
   useEffect(() => {
-    if (debouncedCity || debouncedState) {
+    if (debouncedCity) {
       setCurrentPage(0); // Reset to first page when search terms change
       fetchEvents();
     }
-  }, [debouncedCity, debouncedState]);
+  }, [debouncedCity]);
 
   // Update existing useEffect for pagination
   useEffect(() => {
@@ -102,13 +100,6 @@ function App() {
             placeholder="City"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="px-4 py-2 mr-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
-          />
-          <input
-            type="text"
-            placeholder="State"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
             className="px-4 py-2 mr-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
           />
           <button

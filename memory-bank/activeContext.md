@@ -26,6 +26,7 @@
 - Updated the .env file to include DEFAULT_EVENTS_PER_PAGE=7 and VITE_DEFAULT_EVENTS_PER_PAGE=7.
 - Updated the api_proxy.cjs file to access the DEFAULT_EVENTS_PER_PAGE variable from process.env.
 - Updated the src/App.tsx file to read the VITE_DEFAULT_EVENTS_PER_PAGE variable from import.meta.env.
+- Removed the state input from the app because it was making the UI unreadable on mobile.
 
 ## Next Steps
 - Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
