@@ -1,9 +1,8 @@
 # Active Context
 
-## Current Work Focus
-Figure out what the events api returns so that we can style the list with some detail about what type of event each event is (eg music, sports, etc.)
 
-# Active Context
+## Current Work Focus
+- Make the landing page return results for Boulder, CO by default, if no default location is stored in LocalStorage
 
 
 ## Recent Changes
@@ -20,14 +19,15 @@ Figure out what the events api returns so that we can style the list with some d
 - Added a new component called `EventDetails.tsx` to display the event details.
 - Modified the `src/App.tsx` file to display the `EventDetails.tsx` component when an event is clicked.
 - Modified the `api_proxy.cjs` file to add a new endpoint to retrieve the details of a specific event.
+- Added some detail about the type of event (eg sports vs music etc) in the event list (using styled icons)
+- Implemented first stab at city and state search functionality. (work in progress).  States are very US centric so we want to move on from that pattern.
+- Handled 429 rate limit errors from the Ticketmaster API.  There's probably a better way to do this, as we are presently surfacing the 429 in the UI. Going forward we should consider quietly retrying the request and showing a loading spinner while waiting for the retry.
+
 
 ## Next Steps
-
-- Add some detail about the type of event (eg sports vs music etc) in the event list
-- Allow the user to specify which region and radius to search for events in. Presently this is hard coded as an env variable.
-- Implemented first stab at city and state search functionality. (work in progress)
+- Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
+- Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage.
 - Investigate whether the radius parameter to the Ticketmaster API is being honored.
-- Handle 429 rate limit errors from the Ticketmaster API.
 - Determine the best way to integrate with Spotify for user preferences.
 
 ## Important Patterns and Preferences
@@ -40,4 +40,3 @@ Figure out what the events api returns so that we can style the list with some d
 - The project requires a strong focus on personalization and user experience.
 - Integration with external APIs (music events, Spotify) will be crucial.
 - The SeatGeek API also looks interesting and has been added to the list of music discovery APIs to explore.
-- We can use perplexity to create links for events we are interested in so we don't have to use ticketmaster links. The syntax is `https://www.perplexity.ai/search?q=boulder%20theater `

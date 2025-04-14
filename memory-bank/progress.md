@@ -8,15 +8,24 @@
 - Pulling events for a hardcoded region and radius from ticketmaster API.
 - Rendering the events in a simple but styled UI.
 - Allowing user to add events of interest to Google Calendar.
-- Allowing the user to click on an event when browsing the list of events to see more details about the event.
 - Initialized the memory bank with core files.
 - Defined the project scope and goals in projectbrief.md.
 - Outlined the product vision and user experience in productContext.md.
 - Documented the system architecture and technical decisions in systemPatterns.md.
 - Described the technologies used and development setup in techContext.md.
+- Implemented the display of event types in the event list
+- Implemented debouncing for the search input
+- Created ClassificationIcon component
+- Created useDebounce hook
+- Implemented the display of event types in the event list
+- Implemented debouncing for the search input
+- Created ClassificationIcon component
+- Created useDebounce hook
+- Created debug utils
+- Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage
 
 ## What's Left to Build
-- Add some detail about the type of event (eg sports vs music etc) in the event list
+- Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
 - Rework the search functionality to be less US-centric.
 - Implement the backend services for user authentication, music event discovery, and Spotify integration.
 - Develop the UI for the web and mobile app.

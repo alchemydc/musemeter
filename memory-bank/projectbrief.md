@@ -8,7 +8,8 @@ Building a web and mobile app for discovering live music events of interest
 - Allow the user to scroll through multiple pages of events
 - Allow a user to select which city to show events for
 - Allow the user to create calendar entries for events of interest
-- Allow the user to listen to music from artists that are coming to town via Spotify
+- Allow the user to listen to music from artists that are coming to town via Spotify or Youtube
+- Allow the user to learn more about the artist by providing a link to their website
 - Allow a user to login and create a profile that includes their geographical area and musical preferences
 - Allow a user to specify their musical preferences by importing likes and followed artists from Spotify
 

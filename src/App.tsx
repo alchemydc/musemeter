@@ -28,8 +28,8 @@ function App() {
 
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 20;
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
+  const [city, setCity] = useState(localStorage.getItem('city') || 'Boulder');
+  const [state, setState] = useState(localStorage.getItem('state') || 'CO');
 
   // Add debounced values
   const debouncedCity = useDebounce(city);
