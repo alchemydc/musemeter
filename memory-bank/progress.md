@@ -23,8 +23,12 @@
 - Created useDebounce hook
 - Created debug utils
 - Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage
+- Configured the default number of events per page using environment variables.
+- Removed the hardcoded port for the api_proxy server.
 
 ## What's Left to Build
+- Input validation for the search parameter(s) prior to the api_server making requests
+- Allow user to "like" an event and store the like status in LocalStorage (for now)
 - Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
 - Rework the search functionality to be less US-centric.
 - Implement the backend services for user authentication, music event discovery, and Spotify integration.
@@ -52,6 +56,10 @@
 
 
 ## Known Issues
+- UI should return to the event in the list closing event details.  Presently it scrolls back to top.
+- UI is displaying house icon for events of type football game.
+- UI doesn't render properly on mobile.  The City and State text inputs plus the search button take up too much room. Let's get rid of the state search as well as the search button since we auto-search after 500ms.
+
 - It is unclear whether the radius parameter to the Ticketmaster API is being honored.
 - The Ticketmaster API returns 429 rate limit errors for larger cities like Denver.  We are now handling this in code.
 

@@ -13,7 +13,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
-const port = 3000;
+const port = process.env.API_PROXY_PORT || 3000;
 const isDev = process.env.NODE_ENV === 'development';
 
 // Debug logger utility
@@ -35,7 +35,7 @@ app.get('/api/events', async (req, res) => {
   try {
     // Extract pagination parameters and city and state from query
     const page = parseInt(req.query.page) || 0;
-    const size = parseInt(req.query.size) || 20;
+    const size = parseInt(req.query.size) || process.env.DEFAULT_EVENTS_PER_PAGE || 20;
     const city = req.query.city;
     const state = req.query.state;
 

@@ -22,11 +22,13 @@
 - Added some detail about the type of event (eg sports vs music etc) in the event list (using styled icons)
 - Implemented first stab at city and state search functionality. (work in progress).  States are very US centric so we want to move on from that pattern.
 - Handled 429 rate limit errors from the Ticketmaster API.  There's probably a better way to do this, as we are presently surfacing the 429 in the UI. Going forward we should consider quietly retrying the request and showing a loading spinner while waiting for the retry.
-
+- Updated the api_proxy.cjs and vite.config.ts files to use the API_PROXY_PORT variable.
+- Updated the .env file to include DEFAULT_EVENTS_PER_PAGE=7 and VITE_DEFAULT_EVENTS_PER_PAGE=7.
+- Updated the api_proxy.cjs file to access the DEFAULT_EVENTS_PER_PAGE variable from process.env.
+- Updated the src/App.tsx file to read the VITE_DEFAULT_EVENTS_PER_PAGE variable from import.meta.env.
 
 ## Next Steps
 - Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
-- Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage.
 - Investigate whether the radius parameter to the Ticketmaster API is being honored.
 - Determine the best way to integrate with Spotify for user preferences.
 

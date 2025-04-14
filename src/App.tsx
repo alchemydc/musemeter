@@ -27,7 +27,7 @@ function App() {
   };
 
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 20;
+  const pageSize = parseInt(import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE) || 10;
   const [city, setCity] = useState(localStorage.getItem('city') || 'Boulder');
   const [state, setState] = useState(localStorage.getItem('state') || 'CO');
 
