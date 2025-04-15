@@ -4,17 +4,21 @@ import { Event, getEvents, ApiResponse } from './events';
 import EventDetails from './EventDetails';
 import ClassificationIcon from './components/ClassificationIcon';
 import { useDebounce } from './hooks/useDebounce';
+import { debug } from './utils/debug';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [showEventDetails, setShowEventDetails] = useState(false);
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
 
   const handleEventClick = (eventId: string) => {
+    setLastClickedId(eventId);
+    setLastScrollPosition(window.scrollY);
     setSelectedEventId(eventId);
     setShowEventDetails(true);
-    // Scroll to event details
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -24,18 +28,32 @@ function App() {
   const handleCloseDetails = () => {
     setShowEventDetails(false);
     setSelectedEventId(null);
+    // Restore last scroll position
+    window.scrollTo({
+      top: lastScrollPosition,
+      behavior: 'smooth'
+    });
   };
 
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = parseInt(import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE) || 10;
-  const [city, setCity] = useState(localStorage.getItem('city') || 'Boulder');
+  const [city, setCity] = useState(() => {
+    const savedCity = localStorage.getItem('city');
+    debug('Initial city load:', { savedCity, defaulting: !savedCity });
+    return savedCity || 'Boulder';
+  });
 
   // Add debounced values
   const debouncedCity = useDebounce(city);
 
   async function fetchEvents() {
     try {
-      const data: ApiResponse = await getEvents(currentPage, pageSize, city);
+      debug('Fetching events:', { 
+        city: debouncedCity, 
+        page: currentPage, 
+        pageSize 
+      });
+      const data: ApiResponse = await getEvents(currentPage, pageSize, debouncedCity);
       setEvents(data._embedded?.events || []);
       setTotalPages(data.page.totalPages);
     } catch (error) {
@@ -43,33 +61,37 @@ function App() {
     }
   }
 
+  // Combine the two effects into one that handles both city changes and pagination
   useEffect(() => {
+    debug('Effect triggered:', {
+      debouncedCity,
+      currentPage,
+      isInitialLoad: !debouncedCity
+    });
+    
     if (debouncedCity) {
-      setCurrentPage(0); // Reset to first page when search terms change
       fetchEvents();
     }
-  }, [debouncedCity]);
-
-  // Update existing useEffect for pagination
-  useEffect(() => {
-    if (currentPage > 0) { // Only fetch for page changes if we're past page 0
-      fetchEvents();
-    }
-  }, [currentPage]);
+  }, [debouncedCity, currentPage]); // Only these two dependencies
 
   const handlePageChange = (newPage: number) => {
+    debug('Page changing:', { from: currentPage, to: newPage });
     setCurrentPage(newPage);
-    // Scroll to top of events list for both next and previous
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
   };
 
-  // Modify handleSearch to use current input values immediately
-  const handleSearch = () => {
-    setCurrentPage(0);
-    fetchEvents();
+  const handleCityChange = (newCity: string) => {
+    debug('City changing:', { 
+      from: city, 
+      to: newCity, 
+      storedCity: localStorage.getItem('city') 
+    });
+    setCity(newCity);
+    localStorage.setItem('city', newCity);
+    setCurrentPage(0); // Reset to first page on city change
   };
 
   return (
@@ -99,7 +121,7 @@ function App() {
             type="text"
             placeholder="City"
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(e) => handleCityChange(e.target.value)}
             className="px-4 py-2 mr-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
           />
           <button
@@ -112,13 +134,17 @@ function App() {
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {events.map((event: Event, index: number) => (
-              <li key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
+              <li 
+                key={index} 
+                className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out
+                  ${event.id === lastClickedId ? 'bg-gray-50 dark:bg-gray-700' : ''}`}
+              >
                 <div className="px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
                         {event.classifications?.[0]?.segment?.name && (
-                          <ClassificationIcon 
+                          <ClassificationIcon
                             segmentName={event.classifications[0].segment.name}
                             className="h-5 w-5 text-gray-400 dark:text-gray-500"
                           />
@@ -141,11 +167,11 @@ function App() {
                         })}
                       </div>
                       <div>
-                        {event.dates.start.localTime ? 
+                        {event.dates.start.localTime ?
                           new Date(`2000-01-01T${event.dates.start.localTime}`).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit'
-                          }) 
+                          })
                           : 'Time TBA'
                         }
                       </div>

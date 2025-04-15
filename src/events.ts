@@ -58,7 +58,9 @@ export interface ApiResponse {
   };
 }
 
-export const getEvents = async (page: number = 0, size: number = 20, city: string = '', state: string = ''): Promise<ApiResponse> => {
+const defaultEventsPerPage = import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE || 10;
+
+export const getEvents = async (page: number = 0, size: number = Number(defaultEventsPerPage), city: string = '', state: string = ''): Promise<ApiResponse> => {
   try {
     let url = `/api/events?page=${page}&size=${size}`;
     if (city) {
