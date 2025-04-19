@@ -38,6 +38,12 @@
 
 ### Frontend Architecture
 - Vite for fast development and optimal builds
+  - The Vite dev server is configured using the `vite.config.ts` file.
+  - The `allowedHosts` setting is configured using the `ALLOWED_HOSTNAMES` environment variable.
+  - The `proxy` setting is configured using the `API_PROXY_PORT` environment variable. This configures Vite to use the API Proxy for authenticated API requests.
+  - The Vite dev server is configured using the `vite.config.ts` file.
+  - The `allowedHosts` setting is configured using the `ALLOWED_HOSTNAMES` environment variable.
+  - The `proxy` setting is configured using the `API_PROXY_PORT` environment variable. This configures Vite to use the API Proxy for authenticated API requests.
 - TypeScript for type safety and better DX
 - Tailwind CSS for maintainable styling
 - Component-driven development with atomic design

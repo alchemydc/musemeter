@@ -26,26 +26,7 @@ interface EventDetailsData {
         name: string;
       };
     }[];
-    attractions?: {
-      name: string;
-      externalLinks?: {
-        youtube?: {
-          url: string;
-        }[];
-        spotify?: {
-          url: string;
-        }[];
-        twitter?: {
-          url: string;
-        }[];
-        facebook?: {
-          url: string;
-        }[];
-        homepage?: {
-          url: string;
-        }[];
-      };
-    }[];
+    attractions?: Attraction[];
   };
   classifications?: {
     segment?: {
@@ -58,17 +39,23 @@ interface EventDetailsData {
       name: string;
     };
   }[];
-  attractions?: {
-    name: string;
-    externalLinks?: {
-      spotify?: {
-        url: string;
-      }[];
-      youtube?: {
-        url: string;
-      }[];
-    };
-  }[];
+  attractions?: Attraction[];
+}
+
+interface AttractionLink {
+  url: string;
+}
+
+interface AttractionLinks {
+  youtube?: AttractionLink[];
+  spotify?: AttractionLink[];
+  homepage?: AttractionLink[];
+}
+
+interface Attraction {
+  name: string;
+  url: string;
+  externalLinks?: AttractionLinks;
 }
 
 const createGoogleCalendarUrl = (event: EventDetailsData) => {
@@ -112,20 +99,19 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
         setError(null);
         const response = await axios.get(`/api/events/${eventId}`);
         
+        const attractionsData = response.data._embedded?.attractions?.map((a: Attraction) => ({
+          name: a.name,
+          url: a.url,
+          youtubeLinks: a.externalLinks?.youtube?.map((y: AttractionLink) => y.url),
+          spotifyLinks: a.externalLinks?.spotify?.map((s: AttractionLink) => s.url),
+          homepageLinks: a.externalLinks?.homepage?.map((h: AttractionLink) => h.url)
+        }));
+
         debug('Event details:', {
           id: eventId,
           name: response.data.name,
           hasAttractions: !!response.data._embedded?.attractions,
-          attractions: response.data._embedded?.attractions?.map(a => ({
-            name: a.name,
-            externalLinks: a.externalLinks,
-            youtubeLinks: a.externalLinks?.youtube?.map(y => y.url),
-            socialLinks: {
-              facebook: a.externalLinks?.facebook?.[0]?.url,
-              twitter: a.externalLinks?.twitter?.[0]?.url,
-              homepage: a.externalLinks?.homepage?.[0]?.url
-            }
-          }))
+          attractions: attractionsData
         });
         
         setEventDetails(response.data);

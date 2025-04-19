@@ -26,7 +26,13 @@
 - Configured the default number of events per page using environment variables.
 - Removed the hardcoded port for the api_proxy server.
 - Removed the state input box from the app because it was making the UI unusable on mobile.
+- Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage
+- Implemented saving the city to local storage whenever the user searches for a city.
+- Implemented making Boulder, CO the default city on page load (unless stored in local storage).
 - Save city to local storage so that the user sees results for the last city they searched for the next time they visit
+- Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage
+- Implemented saving the city to local storage whenever the user searches for a city.
+- Implemented making Boulder, CO the default city on page load (unless stored in local storage).
 
 ## What's Left to Build
 - Input validation for the search parameter(s) prior to the api_server making requests

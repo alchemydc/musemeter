@@ -27,8 +27,13 @@
 - Updated the api_proxy.cjs file to access the DEFAULT_EVENTS_PER_PAGE variable from process.env.
 - Updated the src/App.tsx file to read the VITE_DEFAULT_EVENTS_PER_PAGE variable from import.meta.env.
 - Removed the state input from the app because it was making the UI unreadable on mobile.
+- Implemented saving the city to local storage whenever the user searches for a city.
+- Implemented making Boulder, CO the default city on page load (unless stored in local storage).
+- Implemented saving the city to local storage whenever the user searches for a city.
+- Implemented making Boulder, CO the default city on page load (unless stored in local storage).
 
 ## Next Steps
+- Input validation for the search parameter(s) prior to the api_server making requests
 - Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
 - Investigate whether the radius parameter to the Ticketmaster API is being honored.
 - Determine the best way to integrate with Spotify for user preferences.

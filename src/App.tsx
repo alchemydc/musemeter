@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+//import axios from 'axios';
 import { Event, getEvents, ApiResponse } from './events';
 import EventDetails from './EventDetails';
 import ClassificationIcon from './components/ClassificationIcon';
@@ -122,14 +123,8 @@ function App() {
             placeholder="City"
             value={city}
             onChange={(e) => handleCityChange(e.target.value)}
-            className="px-4 py-2 mr-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
+            className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-indigo-400"
           />
-          <button
-            onClick={() => handleSearch()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-400"
-          >
-            Search
-          </button>
         </div>
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
