@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+package-lock.json
 
 # Editor directories and files
 .vscode/*
@@ -25,3 +26,7 @@ dist-ssr
 
 # secrets
 .env
+.vercel
+
+# private docs
+private/
