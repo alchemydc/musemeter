@@ -5,6 +5,8 @@ This project uses Jest as its testing framework, along with additional tools:
 - `supertest` for HTTP assertions
 - `nock` for mocking HTTP requests
 - Custom test utilities for common testing scenarios
+- GitHub Actions for automated testing
+- Codecov for coverage reporting and analysis
 
 ## Test Structure
 ```
@@ -49,6 +51,24 @@ npm run test:coverage
 ```
 The coverage report will be available in the `coverage/` directory.
 
+## Continuous Integration
+
+### GitHub Actions
+The project uses GitHub Actions for automated testing. The workflow is defined in `.github/workflows/test.yml` and:
+- Runs on push and pull requests to main and dev branches
+- Sets up Node.js environment
+- Installs dependencies using `npm ci`
+- Runs tests with coverage reporting
+- Uploads coverage reports to Codecov
+
+### Codecov Integration
+Coverage reports are automatically uploaded to Codecov, which provides:
+- Coverage trend analysis
+- Pull request coverage checks
+- Branch-specific coverage tracking
+- Coverage thresholds (configured at 70%)
+- Visual coverage reports and badges
+
 ## Test Environment
 
 ### Environment Variables
@@ -66,7 +86,7 @@ The project uses `nock` to mock HTTP requests to external APIs. Mock implementat
 
 Example of mocking an API call:
 ```javascript
-const { mockTicketmasterEvents } = require('../utils/testUtils');
+import { mockTicketmasterEvents } from '../utils/testUtils.js';
 
 describe('Events API', () => {
   beforeEach(() => {
@@ -92,12 +112,9 @@ For API endpoints, follow this pattern:
 
 Example:
 ```javascript
-const supertest = require('supertest');
-const {
-  TEST_API_URL,
-  mockTicketmasterEvents,
-  mockTicketmasterError
-} = require('../utils/testUtils');
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { TEST_API_URL, mockTicketmasterEvents, mockTicketmasterError } from '../utils/testUtils.js';
+import handler from '../../api/events.js';
 
 describe('GET /api/events', () => {
   beforeEach(() => {
@@ -105,21 +122,36 @@ describe('GET /api/events', () => {
   });
 
   it('returns events for a city', async () => {
-    const response = await supertest(TEST_API_URL)
-      .get('/api/events')
-      .query({ city: 'Denver' });
+    const req = {
+      method: 'GET',
+      query: { city: 'Denver' }
+    };
 
-    expect(response.status).toBe(200);
-    expect(response.body._embedded.events).toBeTruthy();
+    const res = {
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await handler(req, res);
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it('handles errors', async () => {
     mockTicketmasterError(500);
-    const response = await supertest(TEST_API_URL)
-      .get('/api/events')
-      .query({ city: 'Denver' });
+    const req = {
+      method: 'GET',
+      query: { city: 'Denver' }
+    };
 
-    expect(response.status).toBe(500);
+    const res = {
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await handler(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
   });
 });
 ```
@@ -131,6 +163,10 @@ describe('GET /api/events', () => {
 4. Keep tests focused and meaningful
 5. Use descriptive test names
 6. Maintain test isolation (no test should depend on another)
+7. Use ES module syntax consistently
+8. Properly mock external dependencies
+9. Include input validation tests
+10. Test error handling scenarios
 
 ## Adding New Tests
 1. Create test files in the appropriate directory
@@ -138,3 +174,6 @@ describe('GET /api/events', () => {
 3. Follow the existing patterns for consistency
 4. Add new utilities to `testUtils.js` if needed
 5. Update this documentation when adding new patterns or conventions
+6. Ensure test coverage meets thresholds
+7. Include both unit and integration tests as appropriate
+8. Document any special test requirements or setup

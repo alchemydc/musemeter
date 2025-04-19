@@ -33,6 +33,8 @@ The Ticketmaster Discovery API uses the following structure for pagination:
 ### Development Tools
 - Git: Distributed version control system for code management
 - GitHub: Collaboration platform for code hosting and CI/CD
+  - GitHub Actions for automated testing and coverage reporting
+  - Codecov integration for test coverage analysis
 - VS Code: Primary IDE with extensions for:
   - TypeScript
   - Tailwind CSS
@@ -42,11 +44,27 @@ The Ticketmaster Discovery API uses the following structure for pagination:
 ### Testing & Quality
 Test methodology is described in detail in [testing.md](testing.md)
 
-- Jest: JavaScript testing framework
+- Jest: JavaScript testing framework for unit and integration tests
+  - Mock API responses using `nock`
+  - Environment configuration for consistent testing
+  - ESM support for modern JavaScript
 - React Testing Library: Component testing utilities
 - ESLint: Static code analysis
 - Prettier: Code formatting
+- Codecov: Test coverage reporting and analysis
+  - Coverage thresholds configured at 70%
+  - Branch-specific coverage tracking
+  - Automated reporting via GitHub Actions
 
+### CI/CD Pipeline
+- GitHub Actions configured for:
+  - Running tests on push and pull requests
+  - Generating and uploading coverage reports
+  - Automated quality checks
+- Codecov integration for:
+  - Coverage reports and badges
+  - Pull request coverage analysis
+  - Historical coverage tracking
 
 ## Environment Variables
 
