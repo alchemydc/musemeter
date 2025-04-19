@@ -35,7 +35,6 @@ export default defineConfig(({ command, mode }) => {
         info: true,
         debug: true
       }
-    },
-    assetsInclude: ['**/*.html'] // Add this line
+    }
   }
 })

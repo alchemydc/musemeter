@@ -19,6 +19,17 @@ const validateEnv = () => {
   }
 };
 
+// Validate request parameters
+const validateRequest = (req) => {
+  if (!req.query.city) {
+    return {
+      isValid: false,
+      error: 'City parameter is required'
+    };
+  }
+  return { isValid: true };
+};
+
 export default async (req, res) => {
   try {
     // Enable CORS
@@ -34,6 +45,12 @@ export default async (req, res) => {
 
     // Validate environment variables
     validateEnv();
+
+    // Validate request parameters
+    const validation = validateRequest(req);
+    if (!validation.isValid) {
+      return res.status(400).json({ error: validation.error });
+    }
 
     // Extract pagination parameters and city from query
     const page = parseInt(req.query.page) || 0;
@@ -109,8 +126,7 @@ export default async (req, res) => {
     }
 
     return res.status(error.response?.status || 500).json({ 
-      error: 'Failed to fetch events',
-      message: error.message
+      error: error.message || 'Failed to fetch events'
     });
   }
 };

@@ -15,6 +15,26 @@ const validateEnv = () => {
   }
 };
 
+// Validate request parameters
+const validateRequest = (req) => {
+  if (!req.query.id) {
+    return {
+      isValid: false,
+      error: 'Event ID is required'
+    };
+  }
+  
+  // Check for valid event ID format (alphanumeric and hyphens only)
+  if (!/^[a-zA-Z0-9-]+$/.test(req.query.id)) {
+    return {
+      isValid: false,
+      error: 'Invalid event ID format'
+    };
+  }
+  
+  return { isValid: true };
+};
+
 export default async (req, res) => {
   try {
     // Enable CORS
@@ -31,34 +51,27 @@ export default async (req, res) => {
     // Validate environment variables
     validateEnv();
 
-    const { id } = req.query;
-    debug(`Fetching event details for ID: ${id}`);
+    // Validate request parameters
+    const validation = validateRequest(req);
+    if (!validation.isValid) {
+      return res.status(400).json({ error: validation.error });
+    }
 
-    const url = `https://app.ticketmaster.com/discovery/v2/events/${id}.json`;
+    // Extract event ID from query
+    const eventId = req.query.id;
+
+    // Make request to Ticketmaster API
+    const url = `https://app.ticketmaster.com/discovery/v2/events/${eventId}.json`;
     debug(`Calling Ticketmaster API: ${url}`);
-    debug('Environment:', { 
-      hasApiKey: !!process.env.API_KEY,
-      nodeEnv: process.env.NODE_ENV
-    });
 
     const response = await axios.get(url, {
       params: {
         apikey: process.env.API_KEY
       }
     });
-    
-    debug(`Ticketmaster API response status: ${response.status}`);
-    debug('Response structure:', {
-      hasData: !!response.data,
-      eventName: response.data?.name,
-      hasVenues: !!response.data?._embedded?.venues,
-      hasAttractions: !!response.data?._embedded?.attractions
-    });
-    
-    // Add response data validation
-    if (!response.data) {
-      throw new Error('Invalid API response: missing data');
-    }
+
+    debug('Response status:', response.status);
+    debug('Response data:', response.data);
 
     // Return the response data
     return res.status(200).json(response.data);
@@ -90,16 +103,15 @@ export default async (req, res) => {
       });
     }
 
-    // Handle event not found
+    // Handle not found errors
     if (error.response?.status === 404) {
       return res.status(404).json({
         error: 'Event not found'
       });
     }
 
-    // Return an error response
     return res.status(error.response?.status || 500).json({ 
-      error: error.message || 'Failed to fetch event details' 
+      error: error.message || 'Failed to fetch event details'
     });
   }
 };

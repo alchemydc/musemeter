@@ -40,10 +40,13 @@ The Ticketmaster Discovery API uses the following structure for pagination:
   - Prettier
 
 ### Testing & Quality
+Test methodology is described in detail in [testing.md](testing.md)
+
 - Jest: JavaScript testing framework
 - React Testing Library: Component testing utilities
 - ESLint: Static code analysis
 - Prettier: Code formatting
+
 
 ## Environment Variables
 

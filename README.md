@@ -10,6 +10,8 @@
 [![React](https://img.shields.io/badge/React-19.0-blue.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF.svg)](https://vitejs.dev/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38B2AC.svg)](https://tailwindcss.com/)
+[![Tests](https://github.com/alchemydc/musemeter/actions/workflows/test.yml/badge.svg)](https://github.com/alchemydc/musemeter/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/alchemydc/musemeter/branch/main/graph/badge.svg)](https://codecov.io/gh/alchemydc/musemeter)
 
 </div>
 
@@ -60,14 +62,15 @@ npm run dev
 # Run tests
 npm test
 
+# Run tests with coverage
+npm run test:coverage
+
 # Lint code
 npm run lint
 
 # Build for production
 npm run build
 ```
-
-
 
 ## 🚀 Deployment
 
