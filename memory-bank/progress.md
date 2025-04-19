@@ -4,7 +4,11 @@
 - User can click on an event and see (some) event details.
 - Handle 429 rate limiting errors returned by the Ticketmaster API.
 - Allowing the user to search for events in a particular City and State. Note this is US centric and thus needs to be reworked.
-- An API proxy server implemented in node/express to prevent API keys from ending up in client side code
+- Implemented `/api/events` serverless function for paginated event retrieval.
+- Implemented `/api/events/:id` serverless function for event details retrieval.
+- Updated `.env.template` with new environment variables (`VERCEL_DEV_PORT`, `RADIUS`, `RADIUS_UNIT`).
+- Updated `README.md` with deployment instructions for Vercel.
+- Removed Express API proxy server and replaced it with Vercel serverless functions.
 - Pulling events for a hardcoded region and radius from ticketmaster API.
 - Rendering the events in a simple but styled UI.
 - Allowing user to add events of interest to Google Calendar.
@@ -35,14 +39,15 @@
 - Implemented making Boulder, CO the default city on page load (unless stored in local storage).
 
 ## What's Left to Build
-- Input validation for the search parameter(s) prior to the api_server making requests
-- Allow user to "like" an event and store the like status in LocalStorage (for now)
-- Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
+- Input validation for the search parameter(s) prior to the api_server making requests.
+- Allow user to "like" an event and store the like status in LocalStorage (for now).
+- Allow the user to filter events by event type (e.g., music/concert, sports, film, etc.).
 - Rework the search functionality to be less US-centric.
 - Implement the backend services for user authentication, music event discovery, and Spotify integration.
 - Develop the UI for the web and mobile app.
 - Integrate with third-party APIs for music events and Spotify.
-- Deploy the app to Vercel.
+- Monitor API rate limits and optimize caching strategies.
+- Update documentation to reflect the migration to Vercel serverless functions.
 
 ## Current Status
 - Memory bank initialized.

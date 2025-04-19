@@ -52,9 +52,11 @@ The project uses environment variables to configure various settings. A `.env.te
 The following environment variables are used:
 
 - `API_KEY`: The API key for the Ticketmaster API.
-- `DEFAULT_EVENTS_PER_PAGE`: The default number of events to display per page.
-- `VITE_DEFAULT_EVENTS_PER_PAGE`: The default number of events to display per page (for Vite).
-- `API_PROXY_PORT`: The port to run the Express API Proxy server on.
+- `DEFAULT_EVENTS_PER_PAGE`: The default number of events to display per page (updated to 7).
+- `VITE_DEFAULT_EVENTS_PER_PAGE`: The default number of events to display per page (updated to 7 for Vite).
+- `VERCEL_DEV_PORT`: The port to run the Vercel dev server on (default: 3000).
+- `RADIUS`: Search radius for events (default: 50).
+- `RADIUS_UNIT`: Unit for the search radius (default: miles).
 - `ALLOWED_HOSTNAMES`: A comma-separated list of hostnames to allow the Vite dev server to respond to.
 - `VERCEL_ENV`: The environment variable for Vercel deployment (e.g., production, preview, development).
 

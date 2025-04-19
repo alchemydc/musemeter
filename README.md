@@ -67,7 +67,47 @@ npm run lint
 npm run build
 ```
 
+
+
+## 🚀 Deployment
+
+### Prerequisites
+1. A [Vercel](https://vercel.com) account
+2. [Vercel CLI](https://vercel.com/docs/cli) installed: `npm i -g vercel`
+3. A Ticketmaster API key
+
+### Environment Variables
+Set up the following environment variables in your Vercel project settings:
+
+- `API_KEY`: Your Ticketmaster API key
+- `RADIUS`: Search radius for events (default: 50)
+- `RADIUS_UNIT`: Unit for radius (default: miles)
+- `DEFAULT_EVENTS_PER_PAGE`: Number of events per page (default: 7)
+
+### Deploy to Vercel
+```bash
+# Login to Vercel
+vercel login
+
+# Deploy to Vercel
+vercel
+
+# Deploy to production
+vercel --prod
+```
+
+The project uses Vercel's serverless functions to handle API requests securely. The frontend will be automatically built and deployed as a static site.
+
+### Local Development
+To test the serverless functions locally:
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Start development server
+vercel dev
+```
+
 ## 📝 License
 
 [MIT](LICENSE) © 2025 MuseMeter
-

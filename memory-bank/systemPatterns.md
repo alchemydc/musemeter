@@ -10,8 +10,9 @@
 - Dark mode support via Tailwind CSS
 
 ### API Layer
-- Express proxy server for third-party API calls
+- Vercel serverless functions for third-party API calls
 - RESTful endpoints for event data
+    - `/api/events`: Retrieves a paginated list of events based on city and radius.
     - `/api/events/:id`: Retrieves details for a specific event.
 - Rate limiting and caching implementation
 - Error handling and logging strategy

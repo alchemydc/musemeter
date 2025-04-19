@@ -1,50 +1,50 @@
 # Active Context
 
+## Current Development Focus
+- Converting Express API to Vercel serverless functions
+- Configuring local development environment to use Vercel dev server
+- Integrating frontend with serverless functions
 
-## Current Work Focus
-- Make the landing page return results for Boulder, CO by default, if no default location is stored in LocalStorage
+## Latest Changes
+- Converted API endpoints to ES module syntax for Vercel serverless functions
+- Updated Vite configuration to proxy API requests to Vercel dev server
+- Added CORS headers and API route rewrites in vercel.json
+- Implemented `/api/events` serverless function for paginated event retrieval
+- Implemented `/api/events/:id` serverless function for event details retrieval
+- Updated `.env.template` with new environment variables (`VERCEL_DEV_PORT`, `RADIUS`, `RADIUS_UNIT`)
+- Updated `README.md` with deployment instructions for Vercel
+- Removed Express API proxy server and replaced it with Vercel serverless functions
 
+## Environment Setup
+### Local Development
+- Frontend runs on Vite dev server
+- Backend uses Vercel dev server for serverless functions
+- Environment variables defined in `.env.template`:
+  - `VERCEL_DEV_PORT=3000`
+  - `RADIUS=50`
+  - `RADIUS_UNIT=miles`
+  - `DEFAULT_EVENTS_PER_PAGE=7`
 
-## Recent Changes
-- Created projectbrief.md with core project details.
-- Created productContext.md outlining the product vision and goals.
-- Created systemPatterns.md to define the system architecture and key technical decisions.
-- Created techContext.md to document the technologies used and development setup.
-- Created progress.md to track the project's status and known issues.
-- Create a separate Node/Express proxy server to handle authenticated API calls to third party API's (starting with Ticketmaster). This design was chosen to prevent putting API keys in client side code.
-- Retrieve and display the name, date, time, and venue for all events from the Ticketmaster API for a given city and radius using Vite and React.
-- Added dark mode support to the event view
-- Added a google calendar link to allow the user to add an event of interest to their calendar
-- Removed the link to Perplexity that was serving as the title for each event.
-- Added a new component called `EventDetails.tsx` to display the event details.
-- Modified the `src/App.tsx` file to display the `EventDetails.tsx` component when an event is clicked.
-- Modified the `api_proxy.cjs` file to add a new endpoint to retrieve the details of a specific event.
-- Added some detail about the type of event (eg sports vs music etc) in the event list (using styled icons)
-- Implemented first stab at city and state search functionality. (work in progress).  States are very US centric so we want to move on from that pattern.
-- Handled 429 rate limit errors from the Ticketmaster API.  There's probably a better way to do this, as we are presently surfacing the 429 in the UI. Going forward we should consider quietly retrying the request and showing a loading spinner while waiting for the retry.
-- Updated the api_proxy.cjs and vite.config.ts files to use the API_PROXY_PORT variable.
-- Updated the .env file to include DEFAULT_EVENTS_PER_PAGE=7 and VITE_DEFAULT_EVENTS_PER_PAGE=7.
-- Updated the api_proxy.cjs file to access the DEFAULT_EVENTS_PER_PAGE variable from process.env.
-- Updated the src/App.tsx file to read the VITE_DEFAULT_EVENTS_PER_PAGE variable from import.meta.env.
-- Removed the state input from the app because it was making the UI unreadable on mobile.
-- Implemented saving the city to local storage whenever the user searches for a city.
-- Implemented making Boulder, CO the default city on page load (unless stored in local storage).
-- Implemented saving the city to local storage whenever the user searches for a city.
-- Implemented making Boulder, CO the default city on page load (unless stored in local storage).
+### Configuration Files
+- `vercel.json`: Routes API requests and handles CORS
+- `vite.config.ts`: Proxies API requests during development
+- Serverless functions in `/api` directory
+
+## Known Issues and Solutions
+- Issue: HTML parsing in Vercel dev server
+  - Solution: Added `assetsInclude: ['**/*.html']` to Vite config
+- Issue: ES module compatibility
+  - Solution: Converted serverless functions to use ES module syntax
 
 ## Next Steps
-- Input validation for the search parameter(s) prior to the api_server making requests
-- Allow the user to filter events by event type (eg music/concert, sports, film, etc.)
-- Investigate whether the radius parameter to the Ticketmaster API is being honored.
-- Determine the best way to integrate with Spotify for user preferences.
+1. Test local development setup with `vercel dev`
+2. Verify API endpoints and frontend integration
+3. Deploy to production and configure environment variables
+4. Remove deprecated Express server files
+5. Update documentation to reflect the migration to Vercel serverless functions
+6. Monitor API rate limits and optimize caching strategies
 
-## Important Patterns and Preferences
-- Following the memory bank structure defined in .clinerules.
-- Documenting all decisions and changes in the memory bank.
-- Using `npm-run-all` to start both the Vite development server and the proxy server simultaneously.
-- Using Tailwind to style HTML output
-
-## Learnings and Project Insights
-- The project requires a strong focus on personalization and user experience.
-- Integration with external APIs (music events, Spotify) will be crucial.
-- The SeatGeek API also looks interesting and has been added to the list of music discovery APIs to explore.
+## Development Workflow
+1. Start Vercel dev server: `vercel dev`
+2. Frontend automatically proxies API requests to Vercel dev server
+3. Use browser dev tools to verify API requests and responses

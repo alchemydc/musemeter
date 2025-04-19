@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const apiProxyPort = env.API_PROXY_PORT || '3000'
+  const vercelDevPort = env.VERCEL_DEV_PORT || '3000'
   const allowedHostNames = env.ALLOWED_HOSTNAMES ? env.ALLOWED_HOSTNAMES.split(',') : []
 
   if (command === 'serve') {
@@ -13,7 +13,7 @@ export default defineConfig(({ command, mode }) => {
     console.table({
       Mode: mode,
       'Allowed Hosts': allowedHostNames.join(', ') || 'none',
-      'API Proxy Port': apiProxyPort
+      'Vercel Dev Port': vercelDevPort
     })
     console.log() // Empty line for spacing
   }
@@ -22,16 +22,20 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react(), tailwindcss()],
     server: {
       allowedHosts: allowedHostNames,
-      proxy: {
+      proxy: command === 'serve' ? {
         '/api': {
-          target: `http://localhost:${apiProxyPort}`,
+          target: `http://127.0.0.1:${vercelDevPort}`,
           changeOrigin: true,
+          secure: false,
+          ws: true,
+          rewrite: (path) => path.replace(/^\/api/, '/api') // Explicitly rewrite paths if needed
         }
-      },
+      } : undefined,
       logger: {
         info: true,
         debug: true
       }
-    }
+    },
+    assetsInclude: ['**/*.html'] // Add this line
   }
 })
