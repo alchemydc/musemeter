@@ -1,4 +1,4 @@
-console.log("events.js function triggered");
+console.log("attractions.js function triggered");
 import axios from 'axios';
 
 // Debug logger utility
@@ -7,10 +7,6 @@ const debug = (...args) => {
     console.log('[Debug]', ...args);
   }
 };
-
-// Default values
-const RADIUS = process.env.RADIUS || '50';
-const RADIUSUNIT = process.env.RADIUS_UNIT || 'miles';
 
 // Validate required environment variables
 const validateEnv = () => {
@@ -21,10 +17,10 @@ const validateEnv = () => {
 
 // Validate request parameters
 const validateRequest = (req) => {
-  if (!req.query.city && !req.query.keyword) {
+  if (!req.query.keyword) {
     return {
       isValid: false,
-      error: 'Either city or keyword parameter is required'
+      error: 'Keyword parameter is required'
     };
   }
   return { isValid: true };
@@ -55,68 +51,43 @@ export default async (req, res) => {
     // Extract parameters from query
     const page = parseInt(req.query.page) || 0;
     const size = parseInt(req.query.size) || process.env.DEFAULT_EVENTS_PER_PAGE || 20;
-    const { city, keyword } = req.query;
+    const keyword = req.query.keyword;
 
-    debug('Request params:', { page, size, city, keyword });
+    debug('Request params:', { page, size, keyword });
     debug('Environment:', { 
-      radius: RADIUS,
-      radiusUnit: RADIUSUNIT,
       hasApiKey: !!process.env.API_KEY,
       nodeEnv: process.env.NODE_ENV
     });
 
-    // Make request to Ticketmaster API with pagination
-    const url = 'https://app.ticketmaster.com/discovery/v2/events.json';
+    // Make request to Ticketmaster API
+    const url = 'https://app.ticketmaster.com/discovery/v2/attractions.json';
     debug(`Calling Ticketmaster API: ${url}`);
 
-    // Prepare API request parameters
-    const params = {
-      apikey: process.env.API_KEY,
-      page: page,
-      size: size,
-      sort: 'date,asc'
-    };
-
-    // Add search parameters based on what was provided
-    if (city) {
-      params.city = city;
-      params.radius = RADIUS;
-      params.unit = RADIUSUNIT;
-    } else if (keyword) {
-      params.keyword = keyword;
-    }
-
-    const response = await axios.get(url, { params });
+    const response = await axios.get(url, {
+      params: {
+        apikey: process.env.API_KEY,
+        keyword: keyword,
+        page: page,
+        size: size
+      }
+    });
 
     debug('Response status:', response.status);
     debug('Response structure:', {
       hasData: !!response.data,
       hasEmbedded: !!response.data?._embedded,
-      hasEvents: !!response.data?._embedded?.events,
-      eventCount: response.data?._embedded?.events?.length || 0
+      hasAttractions: !!response.data?._embedded?.attractions,
+      attractionCount: response.data?._embedded?.attractions?.length || 0
     });
 
-    // Initialize response structure
-    const finalResponse = {
-      page: response.data.page || { totalElements: 0, totalPages: 0, number: page, size },
-      _links: response.data._links || {},
-    };
-
-    // Add events if they exist
-    // Handle case where Ticketmaster API returns success but no events
-    if (!response.data._embedded?.events) {
-      debug('No events found in response');
-      return res.status(404).json({
-        error: keyword ? 
-          'No events found for this artist/venue.' :
-          'No events found in this location.',
-        _embedded: { events: [] },
-        page: { totalElements: 0, totalPages: 0, number: page, size }
-      });
+    // Validate response data
+    if (!response.data) {
+      debug('Invalid response:', response.data);
+      throw new Error('Invalid API response: missing data');
     }
 
-    finalResponse._embedded = { events: response.data._embedded.events };
-    return res.status(200).json(finalResponse);
+    // Return the response data
+    return res.status(200).json(response.data);
     
   } catch (error) {
     console.error('API Error:', error.message);
@@ -127,9 +98,7 @@ export default async (req, res) => {
       config: {
         url: error.config?.url,
         params: error.config?.params
-      },
-      isAxiosError: error.isAxiosError,
-      stack: error.stack
+      }
     });
 
     // Handle rate limiting specifically
@@ -148,7 +117,7 @@ export default async (req, res) => {
     }
 
     return res.status(error.response?.status || 500).json({ 
-      error: error.message || 'Failed to fetch events'
+      error: error.message || 'Failed to fetch attractions'
     });
   }
 };

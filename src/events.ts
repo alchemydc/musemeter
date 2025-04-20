@@ -1,87 +1,44 @@
-export interface Event {
-  id: string;
-  name: string;
-  type: string;
-  dates: {
-    start: {
-      localDate: string;
-      localTime: string;
-    };
-  };
-  _embedded?: {
-    venues?: { name: string }[];
-  };
-  url?: string;
-  classifications?: {
-    primary: boolean;
-    segment: {
-      id: string;
-      name: string;
-    };
-    genre: {
-      id: string;
-      name: string;
-    };
-    subGenre: {
-      id: string;
-      name: string;
-    };
-    type: {
-      id: string;
-      name: string;
-    };
-    subType: {
-      id: string;
-      name: string;
-    };
-    family: boolean;
-  }[];
-  // Add other properties as needed
-}
-
-export interface ApiResponse {
-  _embedded?: {
-    events: Event[];
-  };
-  page: {
-    totalElements: number;
-    totalPages: number;
-    number: number;
-    size: number;
-  };
-  _links?: {
-    self: { href: string };
-    first?: { href: string };
-    last?: { href: string };
-    next?: { href: string };
-    prev?: { href: string };
-  };
-}
+import { Event, Attraction, ApiResponse } from './types';
 
 const defaultEventsPerPage = import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE || 10;
 
-export const getEvents = async (page: number = 0, size: number = Number(defaultEventsPerPage), city: string = '', state: string = ''): Promise<ApiResponse> => {
+export interface SearchParams {
+  page: number;
+  size: number;
+  searchType: 'city' | 'keyword' | 'attraction';
+  searchValue: string;
+}
+
+export const getEvents = async ({
+  page = 0,
+  size = Number(defaultEventsPerPage),
+  searchType = 'city',
+  searchValue = ''
+}: SearchParams): Promise<ApiResponse<Event>> => {
   try {
     let url = `/api/events?page=${page}&size=${size}`;
-    if (city) {
-      url += `&city=${city}`;
-    }
-    if (state) {
-      url += `&state=${state}`;
+    if (searchValue) {
+      if (searchType === 'attraction') {
+        url += `&keyword=${searchValue}`;
+      } else {
+        url += `&${searchType}=${searchValue}`;
+      }
     }
     const response = await fetch(url);
     
+    const data: ApiResponse<Event> = await response.json();
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Extract error message from response if available
+      const errorMessage = data.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
     }
-    
-    const data: ApiResponse = await response.json();
     
     // Debug log classifications
     if (process.env.NODE_ENV === 'development') {
-      data._embedded?.events.forEach(event => {
+      data._embedded?.events?.forEach((event: Event) => {
         console.log(`Event ${event.name} classifications:`, 
-          event.classifications?.map(c => c.segment?.name)
+          event.classifications?.map((c) => c.segment?.name)
         );
       });
     }
@@ -98,10 +55,60 @@ export const getEvents = async (page: number = 0, size: number = Number(defaultE
   }
 }
 
-export const hasNextPage = (response: ApiResponse): boolean => {
+export const getAttractions = async (keyword: string, page = 0, size = Number(defaultEventsPerPage)): Promise<ApiResponse<Attraction>> => {
+  try {
+    const response = await fetch(`/api/attractions?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
+    
+    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch attractions:', error);
+    throw error;
+  }
+};
+
+export const getAttractionDetails = async (attractionId: string): Promise<Attraction> => {
+  try {
+    const response = await fetch(`/api/attractions/${attractionId}`);
+    
+    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch attraction details:', error);
+    throw error;
+  }
+};
+
+export const getEventsByAttraction = async (attractionId: string, page = 0, size = Number(defaultEventsPerPage)): Promise<ApiResponse<Event>> => {
+  try {
+    const attraction = await getAttractionDetails(attractionId);
+    let url = `/api/events?page=${page}&size=${size}&keyword=${encodeURIComponent(attraction.name)}`;
+    const response = await fetch(url);
+    
+    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch events for attraction:', error);
+    throw error;
+  }
+};
+
+export const hasNextPage = (response: ApiResponse<Event | Attraction>): boolean => {
   return !!response._links?.next;
 }
 
-export const hasPreviousPage = (response: ApiResponse): boolean => {
+export const hasPreviousPage = (response: ApiResponse<Event | Attraction>): boolean => {
   return !!response._links?.prev;
 }

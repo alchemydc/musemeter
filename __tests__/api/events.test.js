@@ -89,7 +89,7 @@ describe('GET /api/events', () => {
     expect(res.json).toHaveBeenCalledWith(mockEvents);
   });
 
-  it('should handle missing city parameter', async () => {
+  it('should handle missing search parameters', async () => {
     const req = {
       method: 'GET',
       query: {}
@@ -104,8 +104,53 @@ describe('GET /api/events', () => {
     await handler(req, res);
 
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      error: expect.any(String)
+      error: 'Either city or keyword parameter is required'
     }));
+  });
+
+  it('should return events for keyword search', async () => {
+    const req = {
+      method: 'GET',
+      query: { keyword: 'Taylor Swift' }
+    };
+
+    const res = {
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await handler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockEvents);
+  });
+
+  it('should prioritize city over keyword when both are provided', async () => {
+    nock.cleanAll();
+    nock('https://app.ticketmaster.com')
+      .get('/discovery/v2/events.json')
+      .query(params => params.city === 'Denver' && !params.keyword)
+      .reply(200, mockEvents);
+
+    const req = {
+      method: 'GET',
+      query: { 
+        city: 'Denver',
+        keyword: 'Taylor Swift'
+      }
+    };
+
+    const res = {
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await handler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockEvents);
   });
 
   it('should handle Ticketmaster API errors', async () => {

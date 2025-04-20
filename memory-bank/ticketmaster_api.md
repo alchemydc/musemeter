@@ -14,6 +14,33 @@ API keys should be passed as a query parameter named `apikey` in each request. F
 
 ## API Endpoints
 
+### Search Attractions API
+
+The Search Attractions API allows you to search for artists, venues, or other attractions.
+
+The base URL for the Search Attractions API is:
+
+`https://app.ticketmaster.com/discovery/v2/attractions.json`
+
+The following parameters can be used to filter the results:
+
+*   `apikey`: Your API key.
+*   `keyword`: A keyword to search for (e.g., artist name, venue name).
+*   `page`: The page number to retrieve.
+*   `size`: The number of results to return per page.
+
+### Example Usage
+
+#### Example 1: Search for an artist
+`https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=YOUR_API_KEY&keyword=Taylor+Swift`
+
+This will return information about the artist "Taylor Swift."
+
+#### Example 2: Search for a venue
+`https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=YOUR_API_KEY&keyword=Madison+Square+Garden`
+
+This will return information about the venue "Madison Square Garden."
+
 ### Event Discovery API
 
 The Event Discovery API allows you to search for events based on various criteria, such as keyword, city, state, and date.

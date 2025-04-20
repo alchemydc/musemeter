@@ -5,6 +5,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/attractions/:id",
+      "destination": "/api/attractions/[id]"
+    },
+    {
       "source": "/api/events/:id",
       "destination": "/api/events/[id]"
     },

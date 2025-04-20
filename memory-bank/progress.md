@@ -37,9 +37,16 @@
 - Modified the src/App.tsx file to return results for Boulder, CO by default, if no default location is stored in LocalStorage
 - Implemented saving the city to local storage whenever the user searches for a city.
 - Implemented making Boulder, CO the default city on page load (unless stored in local storage).
+- Implemented the ability to search for events by city.
+- Added functionality to search for artists, leveraging the attractions endpoint under the hood.
+- Introduced a new attractions endpoint to support artist-based searches.
+- Updated the API layer to handle both city-based and artist-based search queries seamlessly.
+- Enhanced the search interface to display results for both events and artists.
+- Adjusted components to accommodate the new search capabilities.
+- Added unit tests for the attractions endpoint to ensure reliability.
+- Verified the functionality of city-based and artist-based searches through integration tests.
 
 ## What's Left to Build
-- Input validation for the search parameter(s) prior to the api_server making requests.
 - Allow user to "like" an event and store the like status in LocalStorage (for now).
 - Allow the user to filter events by event type (e.g., music/concert, sports, film, etc.).
 - Rework the search functionality to be less US-centric.
