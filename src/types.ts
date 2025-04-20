@@ -65,20 +65,19 @@ export interface Attraction {
 
 export interface ApiResponse<T> {
   _embedded?: {
-    events?: Event[];
-    attractions?: Attraction[];
-  };
-  page: {
-    totalElements: number;
-    totalPages: number;
-    number: number;
-    size: number;
+    events?: T[];
+    attractions?: T[];
   };
   _links?: {
     self: { href: string };
-    first?: { href: string };
-    last?: { href: string };
     next?: { href: string };
     prev?: { href: string };
   };
+  page?: {
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    number: number;
+  };
+  error?: string;  // Add error property for error responses
 }

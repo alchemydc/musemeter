@@ -68,7 +68,7 @@ function App() {
         setTotalPages(0);
       } else {
         setAttractions(data._embedded.attractions);
-        setTotalPages(data.page.totalPages);
+        setTotalPages(data.page?.totalPages || 1);
       }
     } catch (error) {
       console.error(error);
@@ -97,7 +97,7 @@ function App() {
         setTotalPages(0);
       } else {
         setEvents(data._embedded.events);
-        setTotalPages(data.page.totalPages);
+        setTotalPages(data.page?.totalPages || 1);
       }
     } catch (error) {
       console.error(error);
@@ -142,7 +142,7 @@ function App() {
         setTotalPages(0);
       } else {
         setEvents(data._embedded.events);
-        setTotalPages(data.page.totalPages);
+        setTotalPages(data.page?.totalPages || 1);
       }
 
       // Update the search value to show what we're searching for
