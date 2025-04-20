@@ -4,6 +4,7 @@ import handler from '../../api/events.js';
 
 describe('GET /api/events', () => {
   const mockEvents = {
+    _links: {},
     _embedded: {
       events: [
         {
