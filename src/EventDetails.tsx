@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ClassificationIcon from './components/ClassificationIcon';
 import { debug } from './utils/debug';
+import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from './utils/date';
 
 interface EventDetailsProps {
   eventId: string;
@@ -60,15 +61,9 @@ interface Attraction {
 
 const createGoogleCalendarUrl = (event: EventDetailsData) => {
   if (!event.dates.start.localDate) return '';
-  
-  const startDate = new Date(event.dates.start.localDate);
-  if (event.dates.start.localTime) {
-    startDate.setHours(
-      parseInt(event.dates.start.localTime.split(':')[0]),
-      parseInt(event.dates.start.localTime.split(':')[1])
-    );
-  }
 
+  // Build a Date in the local timezone using components to avoid UTC parsing issues
+  const startDate = buildLocalEventDate(event.dates.start.localDate, event.dates.start.localTime);
   const endDate = new Date(startDate);
   endDate.setHours(startDate.getHours() + 3); // Default to 3 hour duration
 
@@ -171,18 +166,11 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
 
       <div className="flex flex-col items-end text-sm text-gray-500 dark:text-gray-400 pt-2">
         <div>
-          {new Date(eventDetails?.dates.start.localDate).toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-          })}
+          {formatDisplayDate(buildLocalEventDate(eventDetails.dates.start.localDate, eventDetails.dates.start.localTime))}
         </div>
         <div>
-          {eventDetails?.dates.start.localTime ? 
-            new Date(`2000-01-01T${eventDetails.dates.start.localTime}`).toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit'
-            }) 
+          {eventDetails.dates.start.localTime ? 
+            formatDisplayTime(buildLocalEventDate(eventDetails.dates.start.localDate, eventDetails.dates.start.localTime))
             : 'Time TBA'
           }
         </div>

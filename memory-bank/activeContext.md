@@ -11,6 +11,7 @@
 - Configured GitHub Actions for automated testing
 - Integrated Codecov for test coverage reporting
 - Added input validation and error handling to serverless functions
+- Fixed off-by-one event date bug by replacing naive Date('YYYY-MM-DD') parsing with component-based local construction (src/utils/date.ts) and updated calendar URL generation; added unit tests for the new date utilities.
 - Updated documentation with testing instructions
 - Added GitHub Actions and Codecov badges to README
 
@@ -19,6 +20,7 @@
 - Jest runs tests with ESM support
 - Mock API responses using `nock`
 - Environment variables configured in test setup
+- Added unit tests for date utilities (src/utils/date.ts) to validate local date construction and formatting.
 
 ### CI/CD Pipeline
 - GitHub Actions runs tests on push and pull requests

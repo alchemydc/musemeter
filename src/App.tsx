@@ -7,6 +7,7 @@ import EventDetails from './EventDetails';
 import ClassificationIcon from './components/ClassificationIcon';
 import { useDebounce } from './hooks/useDebounce';
 import { debug } from './utils/debug';
+import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from './utils/date';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -295,24 +296,17 @@ function App() {
                       </div>
                     )}
                     </div>
-                    <div className="flex flex-col items-end text-sm text-gray-500 dark:text-gray-400">
-                      <div>
-                        {new Date(event.dates.start.localDate).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                      <div className="flex flex-col items-end text-sm text-gray-500 dark:text-gray-400">
+                        <div>
+                          {formatDisplayDate(buildLocalEventDate(event.dates.start.localDate, event.dates.start.localTime))}
+                        </div>
+                        <div>
+                          {event.dates.start.localTime ?
+                            formatDisplayTime(buildLocalEventDate(event.dates.start.localDate, event.dates.start.localTime))
+                            : 'Time TBA'
+                          }
+                        </div>
                       </div>
-                      <div>
-                        {event.dates.start.localTime ?
-                          new Date(`2000-01-01T${event.dates.start.localTime}`).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit'
-                          })
-                          : 'Time TBA'
-                        }
-                      </div>
-                    </div>
                   </div>
                   <div className="mt-2 flex items-center">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">

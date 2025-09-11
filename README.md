@@ -107,8 +107,11 @@ To test the serverless functions locally:
 # Install Vercel CLI
 npm i -g vercel
 
-# Start development server
-vercel dev
+# Start development server (for serverless functions)
+npx vercel dev
+
+# Start frontend (in separate terminal)
+npm run dev
 ```
 
 ## 📝 License

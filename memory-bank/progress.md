@@ -45,6 +45,10 @@
 - Adjusted components to accommodate the new search capabilities.
 - Added unit tests for the attractions endpoint to ensure reliability.
 - Verified the functionality of city-based and artist-based searches through integration tests.
+- UI now properly returns to the event in the list closing event details.
+- UI was displaying house icon for events of type football game, now has a generic icon for all sports.
+- The Ticketmaster API returns 429 rate limit errors for larger cities like Denver.  We are now handling this in code.
+- Event dates now display correctly in all timezones (off-by-one bug fixed via src/utils/date.ts; calendar invitations use the corrected local date construction).
 
 ## What's Left to Build
 - Allow user to "like" an event and store the like status in LocalStorage (for now).
@@ -76,14 +80,14 @@
 
 
 ## Known Issues
-- UI should return to the event in the list closing event details.  Presently it scrolls back to top.
-- UI is displaying house icon for events of type football game.
-- UI doesn't render properly on mobile.  The City and State text inputs plus the search button take up too much room. Let's get rid of the state search as well as the search button since we auto-search after 500ms.
 
+- Pagination navigation for events and attractions is being confused. When looking at a multi-page list of events found by first searching for an artist, the next page button browses to the next page of artists rather than the next page of events.
+- UI doesn't render properly on mobile.  Need to truncate the descriptors to make the search less clunky on mobile.
+- We are getting intermittent HTTP/400 errors when rendering event details but only for some events, and seemingly only when the events have been found by searching for a keyword, after searching for artist/attractions.
 - It is unclear whether the radius parameter to the Ticketmaster API is being honored.
-- The Ticketmaster API returns 429 rate limit errors for larger cities like Denver.  We are now handling this in code.
+
 
 ## Evolution of Project Decisions
-- The initial plan was to use a microservices architecture, but this may be reevaluated based on the complexity of the project.
-- The choice of Supabase for the backend may be revisited if it does not meet the project's needs.
 - Not thrilled about the Ticketmaster API but it seems to be one of the few free and relatively open options available.
+- Deep research has revealed that to get underground events we'll likely need to do some web scraping.
+- Our Seatgeek API key was approved so will be taking a look at that API soonish.
