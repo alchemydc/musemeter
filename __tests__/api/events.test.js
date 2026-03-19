@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import nock from 'nock';
-import handler from '../../api/events.js';
+import { GET } from '../../app/api/events/route.ts';
+import { NextRequest } from 'next/server';
 
 describe('GET /api/events', () => {
   const mockEvents = {
@@ -54,14 +55,10 @@ describe('GET /api/events', () => {
   };
 
   beforeEach(() => {
-    // Set required environment variables
     process.env.API_KEY = 'test-api-key';
     process.env.DEFAULT_EVENTS_PER_PAGE = '2';
-
-    // Clean up any existing nock interceptors
     nock.cleanAll();
 
-    // Mock the Ticketmaster API
     nock('https://app.ticketmaster.com')
       .get('/discovery/v2/events.json')
       .query(true)
@@ -73,58 +70,32 @@ describe('GET /api/events', () => {
   });
 
   it('should return a list of events for Denver', async () => {
-    const req = {
-      method: 'GET',
-      query: { city: 'Denver' }
-    };
+    const request = new NextRequest('http://localhost:3000/api/events?city=Denver');
+    const response = await GET(request);
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockEvents);
+    expect(response.status).toBe(200);
+    expect(data).toEqual(mockEvents);
   });
 
   it('should handle missing search parameters', async () => {
-    const req = {
-      method: 'GET',
-      query: {}
-    };
+    const request = new NextRequest('http://localhost:3000/api/events');
+    const response = await GET(request);
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(400);
+    expect(data).toEqual(expect.objectContaining({
       error: 'Either city or keyword parameter is required'
     }));
   });
 
   it('should return events for keyword search', async () => {
-    const req = {
-      method: 'GET',
-      query: { keyword: 'Taylor Swift' }
-    };
+    const request = new NextRequest('http://localhost:3000/api/events?keyword=Taylor+Swift');
+    const response = await GET(request);
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockEvents);
+    expect(response.status).toBe(200);
+    expect(data).toEqual(mockEvents);
   });
 
   it('should prioritize city over keyword when both are provided', async () => {
@@ -134,24 +105,12 @@ describe('GET /api/events', () => {
       .query(params => params.city === 'Denver' && !params.keyword)
       .reply(200, mockEvents);
 
-    const req = {
-      method: 'GET',
-      query: { 
-        city: 'Denver',
-        keyword: 'Taylor Swift'
-      }
-    };
+    const request = new NextRequest('http://localhost:3000/api/events?city=Denver&keyword=Taylor+Swift');
+    const response = await GET(request);
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockEvents);
+    expect(response.status).toBe(200);
+    expect(data).toEqual(mockEvents);
   });
 
   it('should handle Ticketmaster API errors', async () => {
@@ -161,21 +120,12 @@ describe('GET /api/events', () => {
       .query(true)
       .reply(500, { error: 'Internal Server Error' });
 
-    const req = {
-      method: 'GET',
-      query: { city: 'Denver' }
-    };
+    const request = new NextRequest('http://localhost:3000/api/events?city=Denver');
+    const response = await GET(request);
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(500);
+    expect(data).toEqual(expect.objectContaining({
       error: expect.any(String)
     }));
   });
@@ -187,21 +137,12 @@ describe('GET /api/events', () => {
       .query(true)
       .reply(429, { error: 'Rate limit exceeded' });
 
-    const req = {
-      method: 'GET',
-      query: { city: 'Denver' }
-    };
+    const request = new NextRequest('http://localhost:3000/api/events?city=Denver');
+    const response = await GET(request);
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(429);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(429);
+    expect(data).toEqual(expect.objectContaining({
       error: expect.stringContaining('Rate limit exceeded')
     }));
   });

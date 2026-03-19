@@ -1,8 +1,10 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ClassificationIcon from './components/ClassificationIcon';
-import { debug } from './utils/debug';
-import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from './utils/date';
+import ClassificationIcon from './ClassificationIcon';
+import { debug } from '../utils/debug';
+import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from '../utils/date';
 
 interface EventDetailsProps {
   eventId: string;
@@ -93,7 +95,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
         setIsLoading(true);
         setError(null);
         const response = await axios.get(`/api/events/${eventId}`);
-        
+
         const attractionsData = response.data._embedded?.attractions?.map((a: Attraction) => ({
           name: a.name,
           url: a.url,
@@ -108,7 +110,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
           hasAttractions: !!response.data._embedded?.attractions,
           attractions: attractionsData
         });
-        
+
         setEventDetails(response.data);
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to fetch event details');
@@ -153,7 +155,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {eventDetails?.classifications?.[0]?.segment?.name && (
-            <ClassificationIcon 
+            <ClassificationIcon
               segmentName={eventDetails.classifications[0].segment.name}
               className="h-6 w-6 text-gray-400 dark:text-gray-500"
             />
@@ -169,7 +171,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
           {formatDisplayDate(buildLocalEventDate(eventDetails.dates.start.localDate, eventDetails.dates.start.localTime))}
         </div>
         <div>
-          {eventDetails.dates.start.localTime ? 
+          {eventDetails.dates.start.localTime ?
             formatDisplayTime(buildLocalEventDate(eventDetails.dates.start.localDate, eventDetails.dates.start.localTime))
             : 'Time TBA'
           }
@@ -230,7 +232,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors duration-150 ease-in-out"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Add to Calendar
