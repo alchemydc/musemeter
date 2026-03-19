@@ -9,7 +9,7 @@ export interface Event {
     };
   };
   _embedded?: {
-    venues?: { 
+    venues?: {
       name: string;
       markets?: { name: string }[];
       city?: { name: string };
@@ -79,5 +79,5 @@ export interface ApiResponse<T> {
     totalPages: number;
     number: number;
   };
-  error?: string;  // Add error property for error responses
+  error?: string;
 }

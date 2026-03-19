@@ -1,6 +1,6 @@
 import { Event, Attraction, ApiResponse } from './types';
 
-const defaultEventsPerPage = import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE || 10;
+const defaultEventsPerPage = process.env.NEXT_PUBLIC_DEFAULT_EVENTS_PER_PAGE || '10';
 
 export interface SearchParams {
   page: number;
@@ -25,7 +25,7 @@ export const getEvents = async ({
       }
     }
     const response = await fetch(url);
-    
+
     const data: ApiResponse<Event> = await response.json();
 
     if (!response.ok) {
@@ -33,21 +33,21 @@ export const getEvents = async ({
       const errorMessage = data.error || `HTTP error! status: ${response.status}`;
       throw new Error(errorMessage);
     }
-    
+
     // Debug log classifications
     if (process.env.NODE_ENV === 'development') {
       data._embedded?.events?.forEach((event: Event) => {
-        console.log(`Event ${event.name} classifications:`, 
+        console.log(`Event ${event.name} classifications:`,
           event.classifications?.map((c) => c.segment?.name)
         );
       });
     }
-    
+
     // Validate pagination data
     if (!data.page) {
       throw new Error('Invalid API response: missing pagination data');
     }
-    
+
     return data;
   } catch (error) {
     console.error('Failed to fetch events:', error);
@@ -58,7 +58,7 @@ export const getEvents = async ({
 export const getAttractions = async (keyword: string, page = 0, size = Number(defaultEventsPerPage)): Promise<ApiResponse<Attraction>> => {
   try {
     const response = await fetch(`/api/attractions?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
-    
+
     const data = await response.json();
     if (!response.ok) {
       const errorMessage = data.error || `HTTP error! status: ${response.status}`;
@@ -74,7 +74,7 @@ export const getAttractions = async (keyword: string, page = 0, size = Number(de
 export const getAttractionDetails = async (attractionId: string): Promise<Attraction> => {
   try {
     const response = await fetch(`/api/attractions/${attractionId}`);
-    
+
     const data = await response.json();
     if (!response.ok) {
       const errorMessage = data.error || `HTTP error! status: ${response.status}`;
@@ -90,9 +90,9 @@ export const getAttractionDetails = async (attractionId: string): Promise<Attrac
 export const getEventsByAttraction = async (attractionId: string, page = 0, size = Number(defaultEventsPerPage)): Promise<ApiResponse<Event>> => {
   try {
     const attraction = await getAttractionDetails(attractionId);
-    let url = `/api/events?page=${page}&size=${size}&keyword=${encodeURIComponent(attraction.name)}`;
+    const url = `/api/events?page=${page}&size=${size}&keyword=${encodeURIComponent(attraction.name)}`;
     const response = await fetch(url);
-    
+
     const data = await response.json();
     if (!response.ok) {
       const errorMessage = data.error || `HTTP error! status: ${response.status}`;

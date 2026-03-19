@@ -2,7 +2,6 @@ import { jest } from '@jest/globals';
 import nock from 'nock';
 
 // Set up environment variables for tests
-process.env.VERCEL_DEV_PORT = process.env.VERCEL_DEV_PORT || '3000';
 process.env.API_KEY = process.env.API_KEY || 'test-api-key';
 process.env.DEFAULT_EVENTS_PER_PAGE = process.env.DEFAULT_EVENTS_PER_PAGE || '7';
 process.env.RADIUS = process.env.RADIUS || '50';

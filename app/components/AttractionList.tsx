@@ -36,14 +36,14 @@ const AttractionList: FC<AttractionListProps> = ({ attractions, onSelect }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {attractions.map(attraction => (
-        <div 
+        <div
           key={attraction.id}
           className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => onSelect(attraction.id)}
         >
           <div className="flex items-start space-x-4">
             {attraction.images?.[0] && (
-              <img 
+              <img
                 src={attraction.images[0].url}
                 alt={attraction.name}
                 className="w-24 h-24 object-cover rounded-lg"

@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import nock from 'nock';
-import handler from '../../api/events/[id].js';
+import { GET } from '../../app/api/events/[id]/route.ts';
+import { NextRequest } from 'next/server';
 
 describe('GET /api/events/:id', () => {
   const mockEventId = '1';
@@ -40,13 +41,9 @@ describe('GET /api/events/:id', () => {
   };
 
   beforeEach(() => {
-    // Set required environment variables
     process.env.API_KEY = 'test-api-key';
-
-    // Clean up any existing nock interceptors
     nock.cleanAll();
 
-    // Mock the Ticketmaster API
     nock('https://app.ticketmaster.com')
       .get(`/discovery/v2/events/${mockEventId}.json`)
       .query(true)
@@ -58,21 +55,12 @@ describe('GET /api/events/:id', () => {
   });
 
   it('should return details for a specific event', async () => {
-    const req = {
-      method: 'GET',
-      query: { id: mockEventId }
-    };
+    const request = new NextRequest(`http://localhost:3000/api/events/${mockEventId}`);
+    const response = await GET(request, { params: Promise.resolve({ id: mockEventId }) });
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockEventDetails);
+    expect(response.status).toBe(200);
+    expect(data).toEqual(mockEventDetails);
   });
 
   it('should handle non-existent event ID', async () => {
@@ -83,21 +71,12 @@ describe('GET /api/events/:id', () => {
       .query(true)
       .reply(404, { error: 'Not Found' });
 
-    const req = {
-      method: 'GET',
-      query: { id: nonExistentId }
-    };
+    const request = new NextRequest(`http://localhost:3000/api/events/${nonExistentId}`);
+    const response = await GET(request, { params: Promise.resolve({ id: nonExistentId }) });
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(404);
+    expect(data).toEqual(expect.objectContaining({
       error: expect.any(String)
     }));
   });
@@ -109,21 +88,12 @@ describe('GET /api/events/:id', () => {
       .query(true)
       .reply(500, { error: 'Internal Server Error' });
 
-    const req = {
-      method: 'GET',
-      query: { id: mockEventId }
-    };
+    const request = new NextRequest(`http://localhost:3000/api/events/${mockEventId}`);
+    const response = await GET(request, { params: Promise.resolve({ id: mockEventId }) });
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(500);
+    expect(data).toEqual(expect.objectContaining({
       error: expect.any(String)
     }));
   });
@@ -135,42 +105,24 @@ describe('GET /api/events/:id', () => {
       .query(true)
       .reply(429, { error: 'Rate limit exceeded' });
 
-    const req = {
-      method: 'GET',
-      query: { id: mockEventId }
-    };
+    const request = new NextRequest(`http://localhost:3000/api/events/${mockEventId}`);
+    const response = await GET(request, { params: Promise.resolve({ id: mockEventId }) });
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(429);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(429);
+    expect(data).toEqual(expect.objectContaining({
       error: expect.stringContaining('Rate limit exceeded')
     }));
   });
 
   it('should handle invalid event ID format', async () => {
     const invalidId = 'invalid-id@#$';
-    const req = {
-      method: 'GET',
-      query: { id: invalidId }
-    };
+    const request = new NextRequest(`http://localhost:3000/api/events/${invalidId}`);
+    const response = await GET(request, { params: Promise.resolve({ id: invalidId }) });
+    const data = await response.json();
 
-    const res = {
-      setHeader: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await handler(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+    expect(response.status).toBe(400);
+    expect(data).toEqual(expect.objectContaining({
       error: expect.any(String)
     }));
   });

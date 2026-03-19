@@ -1,15 +1,19 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Event, Attraction } from './types';
-import { getEvents, getAttractions, getEventsByAttraction, getAttractionDetails } from './events';
-import type { ApiResponse } from './types';
+import { Event, Attraction } from './lib/types';
+import { getEvents, getAttractions, getEventsByAttraction, getAttractionDetails } from './lib/events';
+import type { ApiResponse } from './lib/types';
 import AttractionList from './components/AttractionList';
-import EventDetails from './EventDetails';
+import EventDetails from './components/EventDetails';
 import ClassificationIcon from './components/ClassificationIcon';
 import { useDebounce } from './hooks/useDebounce';
 import { debug } from './utils/debug';
 import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from './utils/date';
 
-function App() {
+const pageSize = parseInt(process.env.NEXT_PUBLIC_DEFAULT_EVENTS_PER_PAGE || '') || 10;
+
+export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [attractions, setAttractions] = useState<Attraction[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -43,9 +47,9 @@ function App() {
   };
 
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = parseInt(import.meta.env.VITE_DEFAULT_EVENTS_PER_PAGE) || 10;
   const [searchType, setSearchType] = useState<'city' | 'attraction'>('city');
   const [searchValue, setSearchValue] = useState(() => {
+    if (typeof window === 'undefined') return 'Boulder';
     const savedCity = localStorage.getItem('city');
     debug('Initial search value load:', { savedCity, defaulting: !savedCity });
     return savedCity || 'Boulder';
@@ -80,11 +84,11 @@ function App() {
   async function fetchEvents() {
     try {
       setError(null);
-      debug('Fetching events:', { 
+      debug('Fetching events:', {
         searchType,
-        searchValue: debouncedSearchValue, 
-        page: currentPage, 
-        pageSize 
+        searchValue: debouncedSearchValue,
+        page: currentPage,
+        pageSize
       });
       const data: ApiResponse<Event> = await getEvents({
         page: currentPage,
@@ -113,7 +117,7 @@ function App() {
       currentPage,
       isInitialLoad: !debouncedSearchValue
     });
-    
+
     if (debouncedSearchValue) {
       if (searchType === 'attraction') {
         setIsSearchingAttractions(true);
@@ -131,7 +135,7 @@ function App() {
     setSelectedAttractionId(attractionId);
     setIsSearchingAttractions(false);
     setCurrentPage(0);
-    
+
     try {
       const attraction = await getAttractionDetails(attractionId);
       debug('Selected attraction:', attraction);
@@ -174,8 +178,8 @@ function App() {
 
   const handleSearchValueChange = (newValue: string) => {
     setError(null);
-    debug('Search value changing:', { 
-      from: searchValue, 
+    debug('Search value changing:', {
+      from: searchValue,
       to: newValue,
       type: searchType
     });
@@ -259,8 +263,8 @@ function App() {
           ) : (
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {events.map((event: Event, index: number) => (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out
                     ${event.id === lastClickedId ? 'bg-gray-50 dark:bg-gray-700' : ''}`}
                 >
@@ -352,5 +356,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

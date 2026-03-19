@@ -1,4 +1,4 @@
-import * as dateUtils from '../../src/utils/date';
+import * as dateUtils from '../../app/utils/date';
 
 describe('date utils', () => {
   test('buildLocalEventDate constructs a local Date with given date and time components', () => {
