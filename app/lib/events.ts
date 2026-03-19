@@ -7,13 +7,15 @@ export interface SearchParams {
   size: number;
   searchType: 'city' | 'keyword' | 'attraction';
   searchValue: string;
+  segments?: string[];
 }
 
 export const getEvents = async ({
   page = 0,
   size = Number(defaultEventsPerPage),
   searchType = 'city',
-  searchValue = ''
+  searchValue = '',
+  segments
 }: SearchParams): Promise<ApiResponse<Event>> => {
   try {
     let url = `/api/events?page=${page}&size=${size}`;
@@ -23,6 +25,9 @@ export const getEvents = async ({
       } else {
         url += `&${searchType}=${searchValue}`;
       }
+    }
+    if (segments?.length) {
+      url += `&segmentId=${segments.join(',')}`;
     }
     const response = await fetch(url);
 
@@ -87,10 +92,13 @@ export const getAttractionDetails = async (attractionId: string): Promise<Attrac
   }
 };
 
-export const getEventsByAttraction = async (attractionId: string, page = 0, size = Number(defaultEventsPerPage)): Promise<ApiResponse<Event>> => {
+export const getEventsByAttraction = async (attractionId: string, page = 0, size = Number(defaultEventsPerPage), segments?: string[]): Promise<ApiResponse<Event>> => {
   try {
     const attraction = await getAttractionDetails(attractionId);
-    const url = `/api/events?page=${page}&size=${size}&keyword=${encodeURIComponent(attraction.name)}`;
+    let url = `/api/events?page=${page}&size=${size}&keyword=${encodeURIComponent(attraction.name)}`;
+    if (segments?.length) {
+      url += `&segmentId=${segments.join(',')}`;
+    }
     const response = await fetch(url);
 
     const data = await response.json();

@@ -34,6 +34,11 @@ export async function GET(request: NextRequest) {
       sort: 'date,asc'
     };
 
+    const segmentId = searchParams.get('segmentId');
+    if (segmentId) {
+      params.segmentId = segmentId;
+    }
+
     if (city) {
       params.city = city;
       params.radius = RADIUS;

@@ -146,4 +146,66 @@ describe('GET /api/events', () => {
       error: expect.stringContaining('Rate limit exceeded')
     }));
   });
+
+  describe('segmentId filtering', () => {
+    it('should forward a single segmentId to Ticketmaster', async () => {
+      nock.cleanAll();
+      nock('https://app.ticketmaster.com')
+        .get('/discovery/v2/events.json')
+        .query(params => params.segmentId === 'KZFzniwnSyZfZ7v7nJ' && params.city === 'Denver')
+        .reply(200, mockEvents);
+
+      const request = new NextRequest('http://localhost:3000/api/events?city=Denver&segmentId=KZFzniwnSyZfZ7v7nJ');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data._embedded.events).toHaveLength(2);
+    });
+
+    it('should forward comma-separated segmentIds to Ticketmaster', async () => {
+      nock.cleanAll();
+      nock('https://app.ticketmaster.com')
+        .get('/discovery/v2/events.json')
+        .query(params => params.segmentId === 'KZFzniwnSyZfZ7v7nJ,KZFzniwnSyZfZ7v7na' && params.city === 'Denver')
+        .reply(200, mockEvents);
+
+      const request = new NextRequest('http://localhost:3000/api/events?city=Denver&segmentId=KZFzniwnSyZfZ7v7nJ,KZFzniwnSyZfZ7v7na');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data._embedded.events).toHaveLength(2);
+    });
+
+    it('should not include segmentId when not provided', async () => {
+      nock.cleanAll();
+      nock('https://app.ticketmaster.com')
+        .get('/discovery/v2/events.json')
+        .query(params => !params.segmentId && params.city === 'Denver')
+        .reply(200, mockEvents);
+
+      const request = new NextRequest('http://localhost:3000/api/events?city=Denver');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data._embedded.events).toHaveLength(2);
+    });
+
+    it('should forward segmentId with keyword search', async () => {
+      nock.cleanAll();
+      nock('https://app.ticketmaster.com')
+        .get('/discovery/v2/events.json')
+        .query(params => params.segmentId === 'KZFzniwnSyZfZ7v7nE' && params.keyword === 'Taylor Swift')
+        .reply(200, mockEvents);
+
+      const request = new NextRequest('http://localhost:3000/api/events?keyword=Taylor+Swift&segmentId=KZFzniwnSyZfZ7v7nE');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data._embedded.events).toHaveLength(2);
+    });
+  });
 });
