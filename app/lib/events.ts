@@ -21,9 +21,9 @@ export const getEvents = async ({
     let url = `/api/events?page=${page}&size=${size}`;
     if (searchValue) {
       if (searchType === 'attraction') {
-        url += `&keyword=${searchValue}`;
+        url += `&keyword=${encodeURIComponent(searchValue)}`;
       } else {
-        url += `&${searchType}=${searchValue}`;
+        url += `&${searchType}=${encodeURIComponent(searchValue)}`;
       }
     }
     if (segments?.length) {

@@ -22,6 +22,13 @@ export async function GET(
       );
     }
 
+    if (!/^[a-zA-Z0-9-]+$/.test(id)) {
+      return NextResponse.json(
+        { error: 'Invalid attraction ID format' },
+        { status: 400 }
+      );
+    }
+
     const response = await axios.get(
       `https://app.ticketmaster.com/discovery/v2/attractions/${id}`,
       { params: { apikey: process.env.API_KEY } }
