@@ -95,4 +95,22 @@ describe('GET /api/attractions/[id]', () => {
       error: 'Attraction not found'
     });
   });
+
+  it.each(['invalid-id@#$', '..%2Fevents', '../events'])('should reject invalid attraction ID format: %s', async (invalidId) => {
+    nock.cleanAll();
+    const scope = nock('https://app.ticketmaster.com')
+      .get(/.*/)
+      .query(true)
+      .reply(200, {});
+
+    const request = new NextRequest('http://localhost:3000/api/attractions/x');
+    const response = await GET(request, { params: Promise.resolve({ id: invalidId }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data).toEqual({
+      error: 'Invalid attraction ID format'
+    });
+    expect(scope.isDone()).toBe(false);
+  });
 });
