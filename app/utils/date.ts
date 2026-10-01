@@ -58,3 +58,43 @@ export const formatCalendarDates = (localDate: string, localTime?: string, durat
   end.setHours(end.getHours() + durationHours);
   return `${dateTimeStamp(start)}/${dateTimeStamp(end)}`;
 };
+
+export interface DayHeading {
+  relative: 'Today' | 'Tomorrow' | null;
+  weekday: string;
+  day: string;
+  month: string;
+  year: string | null;
+}
+
+// Parts for a listing's day heading. Year is only included when it differs from `today`'s.
+export const getDayHeading = (localDate: string, today: Date = new Date()): DayHeading | null => {
+  const date = buildLocalEventDate(localDate);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  // Round rather than floor so a DST shift between the two dates doesn't skew the count
+  const daysAway = Math.round((date.getTime() - startOfToday.getTime()) / 86_400_000);
+
+  return {
+    relative: daysAway === 0 ? 'Today' : daysAway === 1 ? 'Tomorrow' : null,
+    weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
+    day: String(date.getDate()),
+    month: date.toLocaleDateString('en-US', { month: 'short' }),
+    year: date.getFullYear() !== today.getFullYear() ? String(date.getFullYear()) : null,
+  };
+};
+
+// Groups consecutive items sharing a start date; the API already returns events sorted by date.
+export const groupByLocalDate = <T extends { dates: { start: { localDate: string } } }>(items: T[]) => {
+  const groups: { localDate: string; items: T[] }[] = [];
+  for (const item of items) {
+    const last = groups[groups.length - 1];
+    if (last && last.localDate === item.dates.start.localDate) {
+      last.items.push(item);
+    } else {
+      groups.push({ localDate: item.dates.start.localDate, items: [item] });
+    }
+  }
+  return groups;
+};

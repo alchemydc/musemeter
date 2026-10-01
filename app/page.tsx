@@ -7,9 +7,10 @@ import type { ApiResponse } from './lib/types';
 import AttractionList from './components/AttractionList';
 import EventDetails from './components/EventDetails';
 import ClassificationIcon from './components/ClassificationIcon';
+import EventRow from './components/EventRow';
 import { useDebounce } from './hooks/useDebounce';
 import { debug } from './utils/debug';
-import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from './utils/date';
+import { getDayHeading, groupByLocalDate } from './utils/date';
 
 const pageSize = parseInt(process.env.NEXT_PUBLIC_DEFAULT_EVENTS_PER_PAGE || '') || 10;
 
@@ -60,6 +61,7 @@ export default function Home() {
   };
 
   const [totalPages, setTotalPages] = useState(0);
+  const [totalEvents, setTotalEvents] = useState(0);
   const [searchType, setSearchType] = useState<'city' | 'attraction'>('city');
   const [searchValue, setSearchValue] = useState(() => {
     if (typeof window === 'undefined') return 'Boulder';
@@ -122,6 +124,7 @@ export default function Home() {
       } else {
         setEvents(data._embedded.events);
         setTotalPages(data.page?.totalPages || 1);
+        setTotalEvents(data.page?.totalElements ?? data._embedded.events.length);
       }
     } catch (error) {
       console.error(error);
@@ -211,6 +214,7 @@ export default function Home() {
       } else {
         setEvents(data._embedded.events);
         setTotalPages(data.page?.totalPages || 1);
+        setTotalEvents(data.page?.totalElements ?? data._embedded.events.length);
       }
 
       setSearchValue(attraction.name);
@@ -305,7 +309,7 @@ export default function Home() {
                 MuseMeter
               </h1>
               <p className="mt-2 text-surface-500 dark:text-surface-400 text-sm">
-                Discover live events near you
+                If the question is live music, the answer is yes.
               </p>
             </>
           )}
@@ -397,91 +401,79 @@ export default function Home() {
           </div>
         )}
 
-        {notice && !isLoading && (
-          <p role="status" className="py-12 text-center text-sm text-surface-500 dark:text-surface-400">
-            {notice}
+        {/* Results summary */}
+        {!isLoading && !isSearchingAttractions && events.length > 0 && (
+          <p className="mb-2 px-3 text-sm text-surface-500 dark:text-surface-400">
+            {totalEvents.toLocaleString('en-US')} upcoming {totalEvents === 1 ? 'event' : 'events'}
+            {searchType === 'city' && <> near {debouncedSearchValue}</>}
+            {activeSegments.size > 0 && <> · {[...activeSegments].join(', ')}</>}
           </p>
         )}
 
         {/* Content */}
-        {isSearchingAttractions ? (
+        {isLoading ? (
+          /* Skeleton rows */
+          <div className="space-y-3" aria-busy="true">
+            <span className="sr-only">Loading</span>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="grid grid-cols-[4.5rem_1fr] gap-4 px-3 py-3 animate-pulse">
+                <div className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-14"></div>
+                <div>
+                  <div className="h-5 bg-surface-200 dark:bg-surface-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : notice ? (
+          <p role="status" className="py-12 text-center text-sm text-surface-500 dark:text-surface-400">
+            {notice}
+          </p>
+        ) : isSearchingAttractions && attractions.length > 0 ? (
           <AttractionList
             attractions={attractions}
             onSelect={handleAttractionSelect}
           />
-        ) : isLoading ? (
-          /* Skeleton Cards */
-          <div className="space-y-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-surface-900 rounded-xl p-4 shadow-sm animate-pulse">
-                <div className="h-5 bg-surface-200 dark:bg-surface-700 rounded w-3/4 mb-3"></div>
-                <div className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-1/2 mb-2"></div>
-                <div className="h-6 bg-surface-200 dark:bg-surface-700 rounded-full w-28"></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          /* Event Cards */
-          <div className="space-y-3">
-            {events.map((event: Event) => (
-              <button
-                type="button"
-                key={event.id}
-                onClick={() => handleEventClick(event.id)}
-                className={`block w-full text-left bg-white dark:bg-surface-900 rounded-xl p-4 shadow-sm cursor-pointer
-                  hover:shadow-md hover:ring-1 hover:ring-brand-200 dark:hover:ring-brand-800 transition-all
-                  ${event.id === lastClickedId ? 'ring-1 ring-brand-300 dark:ring-brand-700' : ''}`}
-              >
-                <div className="flex items-start gap-2 mb-1">
-                  {event.classifications?.[0]?.segment?.name && (
-                    <ClassificationIcon
-                      segmentName={event.classifications[0].segment.name}
-                      className="h-5 w-5 text-surface-400 dark:text-surface-500 shrink-0 mt-0.5"
-                    />
-                  )}
-                  <h3 className="text-base font-semibold text-surface-900 dark:text-white line-clamp-2">
-                    {event.name}
-                  </h3>
-                </div>
-                <div className="flex items-center text-sm text-surface-500 dark:text-surface-400 mb-2">
-                  <svg className="h-4 w-4 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="truncate">
-                    {event._embedded?.venues?.[0]?.name || 'Unknown Venue'}
-                    {event._embedded?.venues?.[0] && (
-                      <span className="text-surface-400 dark:text-surface-500">
-                        {' '}&middot;{' '}
-                        {[
-                          event._embedded.venues[0].city?.name,
-                          event._embedded.venues[0].state?.stateCode,
-                          event._embedded.venues[0].country?.name !== 'United States Of America'
-                            ? event._embedded.venues[0].country?.name
-                            : null
-                        ]
-                          .filter(Boolean)
-                          .join(', ')}
-                      </span>
+        ) : events.length > 0 ? (
+          /* Events grouped by day */
+          <div className="space-y-6">
+            {groupByLocalDate(events).map(({ localDate, items }) => {
+              const heading = getDayHeading(localDate);
+              return (
+                <section key={localDate} aria-label={heading ? `${heading.weekday} ${heading.month} ${heading.day}` : 'Date to be announced'}>
+                  <h2 className="flex items-baseline gap-2 border-b border-surface-200 dark:border-surface-800 px-3 pb-2 mb-1">
+                    {heading ? (
+                      <>
+                        <span className="text-2xl font-bold tabular-nums text-surface-900 dark:text-white">{heading.day}</span>
+                        <span className="text-sm font-semibold uppercase tracking-wide text-surface-900 dark:text-white">
+                          {heading.month}{heading.year && ` ${heading.year}`}
+                        </span>
+                        <span className="text-sm text-surface-500 dark:text-surface-400">
+                          {heading.relative ?? heading.weekday}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm font-semibold text-surface-900 dark:text-white">Date to be announced</span>
                     )}
-                  </span>
-                </div>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
-                  {formatDisplayDate(buildLocalEventDate(event.dates.start.localDate, event.dates.start.localTime))}
-                  {event.dates.start.localTime && (
-                    <span className="ml-1.5 text-brand-500 dark:text-brand-400">
-                      {formatDisplayTime(buildLocalEventDate(event.dates.start.localDate, event.dates.start.localTime))}
-                    </span>
-                  )}
-                  {!event.dates.start.localTime && (
-                    <span className="ml-1.5 text-brand-500 dark:text-brand-400">Time TBA</span>
-                  )}
-                </span>
-              </button>
-            ))}
+                  </h2>
+                  {items.map((event: Event) => (
+                    <EventRow
+                      key={event.id}
+                      event={event}
+                      isLastViewed={event.id === lastClickedId}
+                      onSelect={handleEventClick}
+                    />
+                  ))}
+                </section>
+              );
+            })}
           </div>
+        ) : !error && (
+          <p className="py-12 text-center text-sm text-surface-500 dark:text-surface-400">
+            {searchType === 'city'
+              ? 'Type a city to see what’s on.'
+              : 'Type an artist’s name to see their upcoming shows.'}
+          </p>
         )}
 
         {/* Pagination */}

@@ -14,6 +14,11 @@ interface EventDetailsData {
   name: string;
   url?: string;
   description?: string;
+  images?: {
+    url: string;
+    ratio?: string;
+    width: number;
+  }[];
   dates: {
     start: {
       localDate: string;
@@ -64,6 +69,12 @@ interface Attraction {
 
 const formatVenueLocation = (venue: NonNullable<NonNullable<EventDetailsData['_embedded']>['venues']>[number]) =>
   [venue.name, venue.city?.name, venue.state?.name].filter(Boolean).join(', ');
+
+// Widest 16:9 image that's still a sensible size for a ~512px-wide sheet
+const pickHeroImage = (images: EventDetailsData['images'] = []) =>
+  images
+    .filter(img => img.ratio === '16_9' && img.width <= 1200)
+    .sort((a, b) => b.width - a.width)[0];
 
 const createGoogleCalendarUrl = (event: EventDetailsData) => {
   const dates = formatCalendarDates(event.dates.start.localDate, event.dates.start.localTime);
@@ -153,8 +164,20 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
     return null;
   }
 
+  const heroImage = pickHeroImage(eventDetails.images);
+  const lineup = eventDetails._embedded?.attractions?.map(a => a.name) ?? [];
+  const calendarUrl = createGoogleCalendarUrl(eventDetails);
+
   return (
     <div className="space-y-4">
+      {heroImage && (
+        <img
+          src={heroImage.url}
+          alt=""
+          className="-mx-5 -mt-5 mb-1 aspect-video w-[calc(100%+2.5rem)] max-w-none object-cover md:rounded-t-2xl"
+        />
+      )}
+
       {/* Title */}
       <div className="flex items-start gap-2">
         {eventDetails?.classifications?.[0]?.segment?.name && (
@@ -183,6 +206,13 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
           }
         </span>
       </div>
+
+      {/* Lineup (only worth listing when there's more than the headliner in the title) */}
+      {lineup.length > 1 && (
+        <p className="text-sm text-surface-600 dark:text-surface-300">
+          <span className="font-semibold text-surface-900 dark:text-white">Lineup:</span> {lineup.join(', ')}
+        </p>
+      )}
 
       {/* Description */}
       {eventDetails?.description && (
@@ -242,8 +272,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             <span className="sm:hidden">YouTube</span><span className="hidden sm:inline">Watch on YouTube</span>
           </a>
         )}
+        {calendarUrl && (
         <a
-          href={createGoogleCalendarUrl(eventDetails)}
+          href={calendarUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center px-3 py-2 text-sm font-medium text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 rounded-full transition-colors"
@@ -252,8 +283,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span className="sm:hidden">Calendar</span><span className="hidden sm:inline">Add to Calendar</span>
+          <span className="sm:hidden">Calendar</span><span className="hidden sm:inline">Add to calendar</span>
         </a>
+        )}
         {eventDetails?._embedded?.attractions?.[0]?.externalLinks?.homepage?.[0]?.url && (
           <a
             href={eventDetails._embedded.attractions[0].externalLinks.homepage[0].url}
