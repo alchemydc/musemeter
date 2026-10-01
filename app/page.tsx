@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Event, Attraction } from './lib/types';
 import { getEvents, getAttractions, getEventsByAttraction, getAttractionDetails } from './lib/events';
 import type { ApiResponse } from './lib/types';
@@ -35,6 +35,8 @@ export default function Home() {
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeSegments, setActiveSegments] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return new Set();
@@ -71,6 +73,7 @@ export default function Home() {
   async function fetchAttractions() {
     try {
       setError(null);
+      setNotice(null);
       setIsLoading(true);
       debug('Fetching attractions:', {
         keyword: debouncedSearchValue,
@@ -79,7 +82,7 @@ export default function Home() {
       });
       const data: ApiResponse<Attraction> = await getAttractions(debouncedSearchValue, currentPage, pageSize);
       if (!data._embedded?.attractions || data._embedded.attractions.length === 0) {
-        setError('No attractions found for your search. Please try different keywords.');
+        setNotice('No artists match that name. Check the spelling or try a shorter name.');
         setAttractions([]);
         setTotalPages(0);
       } else {
@@ -88,7 +91,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error(error);
-      setError('Failed to fetch attractions. Please try again.');
+      setError('Couldn’t load artists. Try again.');
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +100,7 @@ export default function Home() {
   async function fetchEvents() {
     try {
       setError(null);
+      setNotice(null);
       setIsLoading(true);
       debug('Fetching events:', {
         searchType,
@@ -112,7 +116,7 @@ export default function Home() {
         segments: activeSegmentIds.length ? activeSegmentIds : undefined
       });
       if (!data._embedded?.events || data._embedded.events.length === 0) {
-        setError(`No events found ${searchType === 'city' ? 'in this city' : 'for this search'}. Please try a different ${searchType === 'city' ? 'location' : 'keyword'}.`);
+        setNotice(`No upcoming events in ${debouncedSearchValue}. Try a nearby city.`);
         setEvents([]);
         setTotalPages(0);
       } else {
@@ -121,7 +125,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error(error);
-      setError('Failed to fetch events. Please try again.');
+      setError('Couldn’t load events. Try again.');
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +139,8 @@ export default function Home() {
       isInitialLoad: !debouncedSearchValue
     });
 
-    if (debouncedSearchValue) {
+    // One- or two-letter fragments are almost always mid-typing; don't search (or report no results) yet
+    if (debouncedSearchValue.trim().length >= 2) {
       if (searchType === 'attraction' && !selectedAttractionId) {
         setIsSearchingAttractions(true);
         fetchAttractions();
@@ -149,19 +154,58 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchType, debouncedSearchValue, currentPage, activeSegments]);
 
+  // Dialog behaviour for the event details modal: lock page scroll, focus inside,
+  // close on Escape, keep Tab within the dialog, and hand focus back on close.
+  useEffect(() => {
+    if (!showEventDetails) return;
+    const modal = modalRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = 'hidden';
+    modal?.querySelector<HTMLElement>('button')?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowEventDetails(false);
+        setSelectedEventId(null);
+        return;
+      }
+      if (e.key !== 'Tab' || !modal) return;
+      const focusable = modal.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [showEventDetails]);
+
   const handleAttractionSelect = async (attractionId: string) => {
     setSelectedAttractionId(attractionId);
     setIsSearchingAttractions(false);
     setCurrentPage(0);
 
     try {
+      setError(null);
+      setNotice(null);
       setIsLoading(true);
       const attraction = await getAttractionDetails(attractionId);
       debug('Selected attraction:', attraction);
 
       const data = await getEventsByAttraction(attractionId, 0, pageSize, activeSegmentIds.length ? activeSegmentIds : undefined);
       if (!data._embedded?.events || data._embedded.events.length === 0) {
-        setError('No upcoming events found for this artist/venue.');
+        setNotice('This artist has no upcoming events.');
         setEvents([]);
         setTotalPages(0);
       } else {
@@ -172,7 +216,7 @@ export default function Home() {
       setSearchValue(attraction.name);
     } catch (error) {
       console.error(error);
-      setError('Failed to load events for this artist/venue. Please try again.');
+      setError('Couldn’t load events for this artist. Try again.');
       setIsSearchingAttractions(true);
       setSelectedAttractionId(null);
     } finally {
@@ -185,12 +229,13 @@ export default function Home() {
     setCurrentPage(newPage);
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
     });
   };
 
   const handleSearchTypeChange = (newType: 'city' | 'attraction') => {
     setError(null);
+    setNotice(null);
     setSearchType(newType);
     setSearchValue('');
     setCurrentPage(0);
@@ -198,6 +243,7 @@ export default function Home() {
 
   const handleSearchValueChange = (newValue: string) => {
     setError(null);
+    setNotice(null);
     debug('Search value changing:', {
       from: searchValue,
       to: newValue,
@@ -243,6 +289,7 @@ export default function Home() {
                 }}
                 className="p-2 rounded-full bg-surface-100 hover:bg-surface-200 dark:bg-surface-800 dark:hover:bg-surface-700 text-surface-500 hover:text-surface-700 dark:text-surface-400 dark:hover:text-surface-200 transition-colors"
                 title="Back to search"
+                aria-label="Back to search"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -269,9 +316,10 @@ export default function Home() {
           <div className="mb-6 space-y-3">
             {/* Segmented Toggle */}
             <div className="flex justify-center">
-              <div className="inline-flex rounded-full bg-surface-200 dark:bg-surface-800 p-1">
+              <div role="group" aria-label="Search by" className="inline-flex rounded-full bg-surface-200 dark:bg-surface-800 p-1">
                 <button
                   onClick={() => handleSearchTypeChange('city')}
+                  aria-pressed={searchType === 'city'}
                   className={`px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
                     searchType === 'city'
                       ? 'bg-brand-500 text-white shadow-sm'
@@ -282,6 +330,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => handleSearchTypeChange('attraction')}
+                  aria-pressed={searchType === 'attraction'}
                   className={`px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
                     searchType === 'attraction'
                       ? 'bg-brand-500 text-white shadow-sm'
@@ -294,11 +343,16 @@ export default function Home() {
             </div>
             {/* Search Input */}
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <label htmlFor="search" className="sr-only">
+                {searchType === 'city' ? 'City' : 'Artist name'}
+              </label>
+              <svg aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
-                type="text"
+                id="search"
+                type="search"
+                autoComplete="off"
                 placeholder={searchType === 'city' ? "Search by city..." : "Search by artist..."}
                 value={searchValue}
                 onChange={(e) => handleSearchValueChange(e.target.value)}
@@ -314,6 +368,7 @@ export default function Home() {
                   <button
                     key={label}
                     onClick={() => handleSegmentToggle(label)}
+                    aria-pressed={isActive}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       isActive
                         ? 'bg-brand-500 text-white shadow-sm'
@@ -334,12 +389,18 @@ export default function Home() {
 
         {/* Error Banner */}
         {error && (
-          <div className="mb-4 p-4 rounded-xl border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+          <div role="alert" className="mb-4 p-4 rounded-xl border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
             <svg className="h-5 w-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
             <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
           </div>
+        )}
+
+        {notice && !isLoading && (
+          <p role="status" className="py-12 text-center text-sm text-surface-500 dark:text-surface-400">
+            {notice}
+          </p>
         )}
 
         {/* Content */}
@@ -362,11 +423,12 @@ export default function Home() {
         ) : (
           /* Event Cards */
           <div className="space-y-3">
-            {events.map((event: Event, index: number) => (
-              <div
-                key={index}
+            {events.map((event: Event) => (
+              <button
+                type="button"
+                key={event.id}
                 onClick={() => handleEventClick(event.id)}
-                className={`bg-white dark:bg-surface-900 rounded-xl p-4 shadow-sm cursor-pointer
+                className={`block w-full text-left bg-white dark:bg-surface-900 rounded-xl p-4 shadow-sm cursor-pointer
                   hover:shadow-md hover:ring-1 hover:ring-brand-200 dark:hover:ring-brand-800 transition-all
                   ${event.id === lastClickedId ? 'ring-1 ring-brand-300 dark:ring-brand-700' : ''}`}
               >
@@ -417,7 +479,7 @@ export default function Home() {
                     <span className="ml-1.5 text-brand-500 dark:text-brand-400">Time TBA</span>
                   )}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -427,6 +489,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-3 mt-6">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
+              aria-label="Previous page"
               disabled={currentPage === 0}
               className="p-2 rounded-full bg-white dark:bg-surface-900 shadow-sm border border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
             >
@@ -439,6 +502,7 @@ export default function Home() {
             </span>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
+              aria-label="Next page"
               disabled={currentPage === totalPages - 1}
               className="p-2 rounded-full bg-white dark:bg-surface-900 shadow-sm border border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
             >
@@ -460,6 +524,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           {/* Modal */}
           <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="event-details-title"
             className="fixed inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
               bg-white dark:bg-surface-900 rounded-t-2xl md:rounded-2xl max-h-[85vh] md:max-h-[80vh] md:w-full md:max-w-lg
               overflow-y-auto shadow-2xl animate-slide-up"
@@ -472,6 +540,7 @@ export default function Home() {
             {/* Close button */}
             <button
               onClick={handleCloseDetails}
+              aria-label="Close"
               className="absolute top-3 right-3 p-1.5 rounded-full bg-surface-100 hover:bg-surface-200 dark:bg-surface-800 dark:hover:bg-surface-700 text-surface-500 hover:text-surface-700 dark:text-surface-400 dark:hover:text-surface-200 transition-colors z-10"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

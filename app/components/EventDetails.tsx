@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ClassificationIcon from './ClassificationIcon';
 import { debug } from '../utils/debug';
-import { buildLocalEventDate, formatDisplayDate, formatDisplayTime } from '../utils/date';
+import { buildLocalEventDate, formatCalendarDates, formatDisplayDate, formatDisplayTime } from '../utils/date';
 
 interface EventDetailsProps {
   eventId: string;
@@ -12,20 +12,22 @@ interface EventDetailsProps {
 
 interface EventDetailsData {
   name: string;
+  url?: string;
   description?: string;
   dates: {
     start: {
       localDate: string;
-      localTime: string;
+      localTime?: string;
     };
+    timezone?: string;
   };
   _embedded?: {
     venues?: {
       name: string;
-      city: {
+      city?: {
         name: string;
       };
-      state: {
+      state?: {
         name: string;
       };
     }[];
@@ -42,7 +44,6 @@ interface EventDetailsData {
       name: string;
     };
   }[];
-  attractions?: Attraction[];
 }
 
 interface AttractionLink {
@@ -61,24 +62,26 @@ interface Attraction {
   externalLinks?: AttractionLinks;
 }
 
-const createGoogleCalendarUrl = (event: EventDetailsData) => {
-  if (!event.dates.start.localDate) return '';
+const formatVenueLocation = (venue: NonNullable<NonNullable<EventDetailsData['_embedded']>['venues']>[number]) =>
+  [venue.name, venue.city?.name, venue.state?.name].filter(Boolean).join(', ');
 
-  const startDate = buildLocalEventDate(event.dates.start.localDate, event.dates.start.localTime);
-  const endDate = new Date(startDate);
-  endDate.setHours(startDate.getHours() + 3);
+const createGoogleCalendarUrl = (event: EventDetailsData) => {
+  const dates = formatCalendarDates(event.dates.start.localDate, event.dates.start.localTime);
+  if (!dates) return '';
 
   const venue = event._embedded?.venues?.[0];
-  const location = venue ? `${venue.name}, ${venue.city.name}, ${venue.state.name}` : '';
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: event.name,
-    dates: `${startDate.toISOString().replace(/[-:]/g, '').replace('.000', '')}/` +
-           `${endDate.toISOString().replace(/[-:]/g, '').replace('.000', '')}`,
+    dates,
     details: event.description || '',
-    location: location
+    location: venue ? formatVenueLocation(venue) : ''
   });
+  // Times are the venue's local time, so tell Google which zone they are in
+  if (event.dates.timezone) {
+    params.set('ctz', event.dates.timezone);
+  }
 
   return `https://www.google.com/calendar/render?${params.toString()}`;
 };
@@ -160,7 +163,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             className="h-6 w-6 text-brand-500 dark:text-brand-400 shrink-0 mt-0.5"
           />
         )}
-        <h2 className="text-xl font-bold text-surface-900 dark:text-white pr-8">
+        <h2 id="event-details-title" className="text-xl font-bold text-surface-900 dark:text-white pr-8">
           {eventDetails?.name}
         </h2>
       </div>
@@ -197,19 +200,25 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span>
-            {eventDetails._embedded.venues[0].name},{' '}
-            {eventDetails._embedded.venues[0].city.name},{' '}
-            {eventDetails._embedded.venues[0].state.name}
-          </span>
+          <span>{formatVenueLocation(eventDetails._embedded.venues[0])}</span>
         </div>
       )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-2 pt-2">
-        {eventDetails?.attractions?.[0]?.externalLinks?.spotify?.[0]?.url && (
+        {eventDetails.url && (
           <a
-            href={eventDetails.attractions[0].externalLinks.spotify[0].url}
+            href={eventDetails.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full transition-colors"
+          >
+            Get tickets
+          </a>
+        )}
+        {eventDetails?._embedded?.attractions?.[0]?.externalLinks?.spotify?.[0]?.url && (
+          <a
+            href={eventDetails._embedded.attractions[0].externalLinks.spotify[0].url}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-[#1DB954] hover:bg-[#1ed760] rounded-full transition-colors"

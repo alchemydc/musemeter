@@ -33,7 +33,8 @@ export const getEvents = async ({
 
     const data: ApiResponse<Event> = await response.json();
 
-    if (!response.ok) {
+    // The events route answers 404 when there are no matches; treat that as an empty result, not a failure
+    if (!response.ok && response.status !== 404) {
       // Extract error message from response if available
       const errorMessage = data.error || `HTTP error! status: ${response.status}`;
       throw new Error(errorMessage);
@@ -102,7 +103,7 @@ export const getEventsByAttraction = async (attractionId: string, page = 0, size
     const response = await fetch(url);
 
     const data = await response.json();
-    if (!response.ok) {
+    if (!response.ok && response.status !== 404) {
       const errorMessage = data.error || `HTTP error! status: ${response.status}`;
       throw new Error(errorMessage);
     }

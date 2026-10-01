@@ -41,16 +41,17 @@ const AttractionList: FC<AttractionListProps> = ({ attractions, onSelect }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {attractions.map(attraction => (
-        <div
+        <button
+          type="button"
           key={attraction.id}
-          className="bg-white dark:bg-surface-900 rounded-xl overflow-hidden shadow-sm cursor-pointer
-            hover:shadow-md hover:scale-[1.02] transition-all"
+          className="block w-full text-left bg-white dark:bg-surface-900 rounded-xl overflow-hidden shadow-sm cursor-pointer
+            hover:shadow-md motion-safe:hover:scale-[1.02] transition-all"
           onClick={() => onSelect(attraction.id)}
         >
           {attraction.images?.[0] ? (
             <img
               src={attraction.images[0].url}
-              alt={attraction.name}
+              alt=""
               className="w-full h-32 object-cover"
             />
           ) : (
@@ -70,7 +71,7 @@ const AttractionList: FC<AttractionListProps> = ({ attractions, onSelect }) => {
                 (attraction.type.charAt(0).toUpperCase() + attraction.type.slice(1))}
             </div>
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );

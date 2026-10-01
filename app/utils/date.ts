@@ -37,3 +37,24 @@ export const formatDisplayTime = (date: Date): string => {
     minute: '2-digit'
   });
 };
+
+const pad = (n: number) => String(n).padStart(2, '0');
+const dateStamp = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+const dateTimeStamp = (d: Date) => `${dateStamp(d)}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+// Google Calendar `dates` value in floating (zone-less) local time; pair with `ctz` for the venue's timezone.
+// Without a start time the event becomes an all-day entry.
+export const formatCalendarDates = (localDate: string, localTime?: string, durationHours = 3): string => {
+  const start = buildLocalEventDate(localDate, localTime);
+  if (Number.isNaN(start.getTime())) return '';
+
+  if (!localTime) {
+    const next = new Date(start);
+    next.setDate(next.getDate() + 1);
+    return `${dateStamp(start)}/${dateStamp(next)}`;
+  }
+
+  const end = new Date(start);
+  end.setHours(end.getHours() + durationHours);
+  return `${dateTimeStamp(start)}/${dateTimeStamp(end)}`;
+};

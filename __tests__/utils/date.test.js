@@ -32,4 +32,20 @@ describe('date utils', () => {
     expect(typeof s).toBe('string');
     expect(s.length).toBeGreaterThan(0);
   });
+
+  test('formatCalendarDates returns a floating local range with no UTC conversion', () => {
+    expect(dateUtils.formatCalendarDates('2025-09-12', '20:30:00')).toBe('20250912T203000/20250912T233000');
+  });
+
+  test('formatCalendarDates rolls the end time past midnight', () => {
+    expect(dateUtils.formatCalendarDates('2025-12-31', '22:00:00')).toBe('20251231T220000/20260101T010000');
+  });
+
+  test('formatCalendarDates makes an all-day range when there is no start time', () => {
+    expect(dateUtils.formatCalendarDates('2025-09-12')).toBe('20250912/20250913');
+  });
+
+  test('formatCalendarDates returns an empty string for an invalid date', () => {
+    expect(dateUtils.formatCalendarDates('not-a-date', '20:00:00')).toBe('');
+  });
 });
