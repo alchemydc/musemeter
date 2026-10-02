@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Instrument_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+// Montserrat matches the logo's bold/light wordmark; used sparingly for display type.
+const montserrat = Montserrat({ subsets: ['latin'], weight: ['300', '700', '800'], variable: '--font-montserrat' });
+const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-instrument-sans' });
 
 export const metadata: Metadata = {
   title: 'MuseMeter',
+  description: 'Find live music and events near you.',
   icons: {
     icon: [
       { url: '/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
@@ -22,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={`${montserrat.variable} ${instrumentSans.variable}`}>
+      <body className="bg-white text-surface-900 dark:bg-surface-950 dark:text-surface-50">{children}</body>
     </html>
   );
 }

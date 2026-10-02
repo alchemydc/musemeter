@@ -1,28 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
+  /* "VU amber": the backlight of an analogue level meter. Text on light uses 700 (AA); 300 on dark. */
+  --color-accent-50: #fdf7ec;
+  --color-accent-100: #fbebcc;
+  --color-accent-200: #f7d79a;
+  --color-accent-300: #f2b544;
+  --color-accent-400: #e39a1f;
+  --color-accent-500: #cc8100;
+  --color-accent-600: #b86e00;
+  --color-accent-700: #9a5a00;
+  --color-accent-800: #7a4700;
+  --color-accent-900: #5c3500;
 
-  --color-surface-50: #fafafa;
-  --color-surface-100: #f4f4f5;
+  /* Neutral greys matching the monochrome logo. 500 is the lightest grey for body text on white. */
+  --color-surface-50: #f6f6f7;
+  --color-surface-100: #eeeef0;
   --color-surface-200: #e4e4e7;
-  --color-surface-300: #d4d4d8;
-  --color-surface-400: #a1a1aa;
-  --color-surface-500: #71717a;
-  --color-surface-600: #52525b;
-  --color-surface-700: #3f3f46;
-  --color-surface-800: #27272a;
-  --color-surface-900: #18181b;
-  --color-surface-950: #09090b;
+  --color-surface-300: #cfcfd4;
+  --color-surface-400: #9b9ba3;
+  --color-surface-500: #5e5e66;
+  --color-surface-600: #4a4a51;
+  --color-surface-700: #34343a;
+  --color-surface-800: #26262b;
+  --color-surface-900: #1a1a1e;
+  --color-surface-950: #0e0e10;
+}
+
+@theme inline {
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 }
 
 @keyframes slide-up {
@@ -36,9 +43,26 @@
   }
 }
 
+/* Waveform loader: bars rise and fall like a level meter */
+@keyframes meter {
+  from { transform: scaleY(0.35); }
+  to { transform: scaleY(1); }
+}
+
+.meter-bar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: meter 0.7s ease-in-out infinite alternate;
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
 }
 
 html {
@@ -53,4 +77,16 @@ html {
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
