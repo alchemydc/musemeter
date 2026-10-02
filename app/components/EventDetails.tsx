@@ -126,7 +126,10 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
 
         setEventDetails(response.data);
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to fetch event details');
+        setError(
+          (axios.isAxiosError(error) && error.response?.data?.error) ||
+          'Couldn’t load this event. Try again.'
+        );
         console.error('Failed to fetch event details:', error);
       } finally {
         setIsLoading(false);
@@ -183,17 +186,17 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
         {eventDetails?.classifications?.[0]?.segment?.name && (
           <ClassificationIcon
             segmentName={eventDetails.classifications[0].segment.name}
-            className="h-6 w-6 text-brand-500 dark:text-brand-400 shrink-0 mt-0.5"
+            className="h-6 w-6 text-surface-400 shrink-0 mt-0.5"
           />
         )}
-        <h2 id="event-details-title" className="text-xl font-bold text-surface-900 dark:text-white pr-8">
+        <h2 id="event-details-title" className="font-display text-xl font-extrabold leading-tight text-surface-950 dark:text-white pr-8">
           {eventDetails?.name}
         </h2>
       </div>
 
       {/* Date & Time */}
       <div className="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
-        <svg className="h-4 w-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg aria-hidden="true" className="h-4 w-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
@@ -224,7 +227,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
       {/* Venue */}
       {eventDetails?._embedded?.venues?.[0] && (
         <div className="flex items-center text-sm text-surface-600 dark:text-surface-300">
-          <svg className="h-4 w-4 text-brand-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg aria-hidden="true" className="h-4 w-4 text-surface-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
               d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
@@ -241,7 +244,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             href={eventDetails.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full transition-colors"
+            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-surface-950 bg-accent-300 hover:bg-accent-200 rounded-full transition-colors"
           >
             Get tickets
           </a>
@@ -251,9 +254,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             href={eventDetails._embedded.attractions[0].externalLinks.spotify[0].url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-[#1DB954] hover:bg-[#1ed760] rounded-full transition-colors"
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-surface-700 dark:text-surface-200 border border-surface-300 dark:border-surface-700 hover:border-surface-950 dark:hover:border-white rounded-full transition-colors"
           >
-            <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="currentColor">
+            <svg aria-hidden="true" className="w-4 h-4 mr-1.5 text-[#1DB954]" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
             </svg>
             <span className="sm:hidden">Spotify</span><span className="hidden sm:inline">Listen on Spotify</span>
@@ -264,9 +267,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             href={eventDetails._embedded.attractions[0].externalLinks.youtube[0].url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-[#FF0000] hover:bg-[#FF1a1a] rounded-full transition-colors"
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-surface-700 dark:text-surface-200 border border-surface-300 dark:border-surface-700 hover:border-surface-950 dark:hover:border-white rounded-full transition-colors"
           >
-            <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="currentColor">
+            <svg aria-hidden="true" className="w-4 h-4 mr-1.5 text-[#FF0000]" viewBox="0 0 24 24" fill="currentColor">
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
             </svg>
             <span className="sm:hidden">YouTube</span><span className="hidden sm:inline">Watch on YouTube</span>
@@ -277,9 +280,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
           href={calendarUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center px-3 py-2 text-sm font-medium text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 rounded-full transition-colors"
+          className="inline-flex items-center px-3 py-2 text-sm font-medium text-surface-700 dark:text-surface-200 border border-surface-300 dark:border-surface-700 hover:border-surface-950 dark:hover:border-white rounded-full transition-colors"
         >
-          <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg aria-hidden="true" className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
@@ -291,9 +294,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId }) => {
             href={eventDetails._embedded.attractions[0].externalLinks.homepage[0].url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-surface-700 dark:text-surface-300 bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 rounded-full transition-colors"
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-surface-700 dark:text-surface-200 border border-surface-300 dark:border-surface-700 hover:border-surface-950 dark:hover:border-white rounded-full transition-colors"
           >
-            <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg aria-hidden="true" className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             Website

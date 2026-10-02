@@ -8,6 +8,7 @@ import AttractionList from './components/AttractionList';
 import EventDetails from './components/EventDetails';
 import ClassificationIcon from './components/ClassificationIcon';
 import EventRow from './components/EventRow';
+import Waveform from './components/Waveform';
 import { useDebounce } from './hooks/useDebounce';
 import { debug } from './utils/debug';
 import { getDayHeading, groupByLocalDate } from './utils/date';
@@ -162,7 +163,6 @@ export default function Home() {
   useEffect(() => {
     if (!showEventDetails) return;
     const modal = modalRef.current;
-    const previouslyFocused = document.activeElement as HTMLElement | null;
     document.body.style.overflow = 'hidden';
     modal?.querySelector<HTMLElement>('button')?.focus();
 
@@ -190,9 +190,12 @@ export default function Home() {
     return () => {
       document.body.style.overflow = '';
       document.removeEventListener('keydown', onKeyDown);
-      previouslyFocused?.focus();
+      // Return focus to the row that opened the dialog (clicks don't focus buttons in every browser)
+      if (lastClickedId) {
+        document.querySelector<HTMLElement>(`[data-event-id="${CSS.escape(lastClickedId)}"]`)?.focus();
+      }
     };
-  }, [showEventDetails]);
+  }, [showEventDetails, lastClickedId]);
 
   const handleAttractionSelect = async (attractionId: string) => {
     setSelectedAttractionId(attractionId);
@@ -279,10 +282,10 @@ export default function Home() {
   const activeSegmentIds = [...activeSegments].map(label => SEGMENT_IDS[label]).filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-surface-950 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <header className="text-center mb-8">
           {selectedAttractionId ? (
             <div className="flex items-center justify-center gap-3">
               <button
@@ -295,38 +298,41 @@ export default function Home() {
                 title="Back to search"
                 aria-label="Back to search"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h1 className="text-3xl md:text-4xl font-bold text-surface-900 dark:text-white">
-                Events for {searchValue}
+              <h1 className="font-display text-2xl md:text-3xl font-light text-surface-900 dark:text-white">
+                Shows by <span className="font-extrabold">{searchValue}</span>
               </h1>
             </div>
           ) : (
             <>
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-brand-400 to-brand-600 bg-clip-text text-transparent">
-                MuseMeter
+              <h1 className="flex flex-col items-center gap-3 text-surface-950 dark:text-white">
+                <Waveform className="h-9 w-auto" />
+                <span className="font-display text-3xl md:text-4xl tracking-wide">
+                  <span className="font-extrabold">MUSE</span><span className="font-light">METER</span>
+                </span>
               </h1>
               <p className="mt-2 text-surface-500 dark:text-surface-400 text-sm">
                 If the question is live music, the answer is yes.
               </p>
             </>
           )}
-        </div>
+        </header>
 
         {/* Search Controls */}
         {!selectedAttractionId && (
           <div className="mb-6 space-y-3">
             {/* Segmented Toggle */}
             <div className="flex justify-center">
-              <div role="group" aria-label="Search by" className="inline-flex rounded-full bg-surface-200 dark:bg-surface-800 p-1">
+              <div role="group" aria-label="Search by" className="inline-flex rounded-full border border-surface-200 dark:border-surface-800 p-1">
                 <button
                   onClick={() => handleSearchTypeChange('city')}
                   aria-pressed={searchType === 'city'}
                   className={`px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
                     searchType === 'city'
-                      ? 'bg-brand-500 text-white shadow-sm'
+                      ? 'bg-surface-950 text-white dark:bg-white dark:text-surface-950'
                       : 'text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white'
                   }`}
                 >
@@ -337,7 +343,7 @@ export default function Home() {
                   aria-pressed={searchType === 'attraction'}
                   className={`px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
                     searchType === 'attraction'
-                      ? 'bg-brand-500 text-white shadow-sm'
+                      ? 'bg-surface-950 text-white dark:bg-white dark:text-surface-950'
                       : 'text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white'
                   }`}
                 >
@@ -357,10 +363,10 @@ export default function Home() {
                 id="search"
                 type="search"
                 autoComplete="off"
-                placeholder={searchType === 'city' ? "Search by city..." : "Search by artist..."}
+                placeholder={searchType === 'city' ? 'City, e.g. Denver' : 'Artist, e.g. Khruangbin'}
                 value={searchValue}
                 onChange={(e) => handleSearchValueChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-shadow"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-shadow"
               />
             </div>
 
@@ -375,8 +381,8 @@ export default function Home() {
                     aria-pressed={isActive}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       isActive
-                        ? 'bg-brand-500 text-white shadow-sm'
-                        : 'bg-surface-200 dark:bg-surface-800 text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white'
+                        ? 'bg-surface-950 text-white dark:bg-white dark:text-surface-950'
+                        : 'border border-surface-200 dark:border-surface-800 text-surface-600 dark:text-surface-400 hover:border-surface-400 hover:text-surface-900 dark:hover:text-white'
                     }`}
                   >
                     <ClassificationIcon
@@ -394,7 +400,7 @@ export default function Home() {
         {/* Error Banner */}
         {error && (
           <div role="alert" className="mb-4 p-4 rounded-xl border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
-            <svg className="h-5 w-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg aria-hidden="true" className="h-5 w-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
             <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
@@ -412,18 +418,9 @@ export default function Home() {
 
         {/* Content */}
         {isLoading ? (
-          /* Skeleton rows */
-          <div className="space-y-3" aria-busy="true">
+          <div className="flex justify-center py-16" aria-busy="true">
+            <Waveform animated className="h-10 w-auto text-surface-950 dark:text-white" />
             <span className="sr-only">Loading</span>
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="grid grid-cols-[4.5rem_1fr] gap-4 px-3 py-3 animate-pulse">
-                <div className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-14"></div>
-                <div>
-                  <div className="h-5 bg-surface-200 dark:bg-surface-700 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
           </div>
         ) : notice ? (
           <p role="status" className="py-12 text-center text-sm text-surface-500 dark:text-surface-400">
@@ -441,14 +438,14 @@ export default function Home() {
               const heading = getDayHeading(localDate);
               return (
                 <section key={localDate} aria-label={heading ? `${heading.weekday} ${heading.month} ${heading.day}` : 'Date to be announced'}>
-                  <h2 className="flex items-baseline gap-2 border-b border-surface-200 dark:border-surface-800 px-3 pb-2 mb-1">
+                  <h2 className="flex items-baseline gap-2 border-b border-surface-950/80 dark:border-white/60 px-3 pb-2 mb-1">
                     {heading ? (
                       <>
-                        <span className="text-2xl font-bold tabular-nums text-surface-900 dark:text-white">{heading.day}</span>
-                        <span className="text-sm font-semibold uppercase tracking-wide text-surface-900 dark:text-white">
+                        <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-surface-950 dark:text-white">{heading.day}</span>
+                        <span className="font-display text-sm font-light uppercase tracking-[0.2em] text-surface-950 dark:text-white">
                           {heading.month}{heading.year && ` ${heading.year}`}
                         </span>
-                        <span className="text-sm text-surface-500 dark:text-surface-400">
+                        <span className={`ml-auto text-sm ${heading.relative ? 'font-semibold text-accent-700 dark:text-accent-300' : 'text-surface-500 dark:text-surface-400'}`}>
                           {heading.relative ?? heading.weekday}
                         </span>
                       </>
@@ -483,22 +480,22 @@ export default function Home() {
               onClick={() => handlePageChange(currentPage - 1)}
               aria-label="Previous page"
               disabled={currentPage === 0}
-              className="p-2 rounded-full bg-white dark:bg-surface-900 shadow-sm border border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
+              className="p-2 rounded-full border border-surface-300 dark:border-surface-700 text-surface-600 dark:text-surface-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-sm font-medium text-surface-600 dark:text-surface-300">
-              {currentPage + 1} / {totalPages}
+            <span className="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300">
+              Page {currentPage + 1} of {totalPages}
             </span>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               aria-label="Next page"
               disabled={currentPage === totalPages - 1}
-              className="p-2 rounded-full bg-white dark:bg-surface-900 shadow-sm border border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
+              className="p-2 rounded-full border border-surface-300 dark:border-surface-700 text-surface-600 dark:text-surface-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -513,7 +510,7 @@ export default function Home() {
           onClick={handleCloseDetails}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-surface-950/60" />
           {/* Modal */}
           <div
             ref={modalRef}
@@ -535,7 +532,7 @@ export default function Home() {
               aria-label="Close"
               className="absolute top-3 right-3 p-1.5 rounded-full bg-surface-100 hover:bg-surface-200 dark:bg-surface-800 dark:hover:bg-surface-700 text-surface-500 hover:text-surface-700 dark:text-surface-400 dark:hover:text-surface-200 transition-colors z-10"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

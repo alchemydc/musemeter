@@ -26,17 +26,18 @@ const EventRow: FC<EventRowProps> = ({ event, isLastViewed, onSelect }) => {
   return (
     <button
       type="button"
+      data-event-id={event.id}
       onClick={() => onSelect(event.id)}
-      className={`group grid w-full grid-cols-[4.5rem_1fr] gap-4 rounded-xl px-3 py-3 text-left transition-colors
-        hover:bg-white dark:hover:bg-surface-900
-        ${isLastViewed ? 'bg-white dark:bg-surface-900' : ''}`}
+      className={`group grid w-full grid-cols-[4.5rem_1fr] gap-4 rounded-lg px-3 py-3 text-left transition-colors
+        hover:bg-surface-50 dark:hover:bg-surface-900
+        ${isLastViewed ? 'bg-surface-50 dark:bg-surface-900' : ''}`}
     >
-      <span className="pt-0.5 text-sm font-semibold tabular-nums text-brand-700 dark:text-brand-300">
+      <span className="pt-0.5 text-sm font-semibold tabular-nums text-accent-700 dark:text-accent-300">
         {localTime ? formatDisplayTime(buildLocalEventDate(localDate, localTime)) : 'TBA'}
       </span>
       <span className="min-w-0">
         <span className="flex items-start justify-between gap-3">
-          <span className="font-semibold text-surface-900 dark:text-white line-clamp-2 group-hover:underline underline-offset-4 decoration-1">
+          <span className="font-semibold text-surface-950 dark:text-white line-clamp-2 group-hover:underline underline-offset-4 decoration-1">
             {event.name}
           </span>
           {segment && (
