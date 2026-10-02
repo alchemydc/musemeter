@@ -22,7 +22,7 @@ export async function GET(
       );
     }
 
-    if (!/^[a-zA-Z0-9-]+$/.test(id)) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
       return NextResponse.json(
         { error: 'Invalid event ID format' },
         { status: 400 }

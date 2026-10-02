@@ -51,6 +51,21 @@ describe('GET /api/attractions/[id]', () => {
     expect(data).toEqual(mockAttraction);
   });
 
+  it('should accept attraction IDs containing underscores', async () => {
+    const id = 'K8vZ917_abc';
+    nock('https://app.ticketmaster.com')
+      .get(`/discovery/v2/attractions/${id}`)
+      .query(true)
+      .reply(200, { ...mockAttraction, id });
+
+    const request = new NextRequest(`http://localhost:3000/api/attractions/${id}`);
+    const response = await GET(request, { params: Promise.resolve({ id }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.id).toBe(id);
+  });
+
   it('should handle missing attraction ID', async () => {
     const request = new NextRequest('http://localhost:3000/api/attractions/');
     const response = await GET(request, { params: Promise.resolve({ id: '' }) });
