@@ -115,8 +115,22 @@ describe('GET /api/events/:id', () => {
     }));
   });
 
-  it('should handle invalid event ID format', async () => {
-    const invalidId = 'invalid-id@#$';
+  it('should accept event IDs containing underscores', async () => {
+    const id = 'Z7r9jZ1AAvb_O';
+    nock('https://app.ticketmaster.com')
+      .get(`/discovery/v2/events/${id}.json`)
+      .query(true)
+      .reply(200, { ...mockEventDetails, id });
+
+    const request = new NextRequest(`http://localhost:3000/api/events/${id}`);
+    const response = await GET(request, { params: Promise.resolve({ id }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.id).toBe(id);
+  });
+
+  it.each(['invalid-id@#$', '../events'])('should handle invalid event ID format: %s', async (invalidId) => {
     const request = new NextRequest(`http://localhost:3000/api/events/${invalidId}`);
     const response = await GET(request, { params: Promise.resolve({ id: invalidId }) });
     const data = await response.json();
